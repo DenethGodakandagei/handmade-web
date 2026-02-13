@@ -12,6 +12,10 @@ import { fileURLToPath } from 'url';
 
 import errorHandler from './middleware/errorMiddleware.js';
 
+// Swagger
+import swaggerUi from 'swagger-ui-express';
+import specs from './config/swagger.js';
+
 // Route files
 // Route files
 import auth from './routes/authRoute.js';
@@ -75,6 +79,11 @@ app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/orders', orders);
 app.use('/api/v1/contact', contact);
 app.use('/api/v1/customizations', customizations);
+
+
+
+// Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(errorHandler);
 

@@ -27,6 +27,36 @@ const uploadFields = upload.fields([
   { name: 'video', maxCount: 1 }
 ]);
 
+/**
+ * @swagger
+ * tags:
+ *   name: Products
+ *   description: Product management
+ */
+
+/**
+ * @swagger
+ * /products:
+ *   get:
+ *     summary: Get all products
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: List of products
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: The product ID
+ *                   name:
+ *                     type: string
+ *                     description: The product name
+ */
 router
   .route('/')
   .get(checkCache, getProducts)

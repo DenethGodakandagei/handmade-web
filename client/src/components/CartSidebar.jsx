@@ -8,22 +8,23 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet';
 
 const CartSidebar = () => {
-  const { 
-    isCartOpen, 
-    closeCart, 
-    items, 
-    removeFromCart, 
-    updateQuantity 
+  const {
+    isCartOpen,
+    closeCart,
+    items,
+    removeFromCart,
+    updateQuantity
   } = useCartStore();
 
   const validItems = Array.isArray(items) ? items.filter(item => item && item.product) : [];
   const subtotal = validItems.reduce((sum, item) => sum + (item.product.price || 0) * (item.quantity || 1), 0);
   const shipping = subtotal > 100 ? 0 : 12.99;
   const total = subtotal + shipping;
-  
+
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -36,6 +37,9 @@ const CartSidebar = () => {
       <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-white border-none shadow-2xl p-0">
         <SheetHeader className="p-8 pb-4 flex flex-row items-center justify-between border-b border-gray-100">
           <SheetTitle className="font-serif text-3xl font-normal text-black">Cart ({validItems.length})</SheetTitle>
+          <SheetDescription className="hidden">
+            Review your selected items and proceed to checkout.
+          </SheetDescription>
           {/* Close button is handled by Sheet primitive usually, but we can have custom if needed. 
               Shadcn Sheet has a default close button. */}
         </SheetHeader>
@@ -61,15 +65,15 @@ const CartSidebar = () => {
                   </div>
                   <div className="flex flex-1 flex-col justify-between py-1">
                     <div className="flex justify-between items-start">
-                       <div>
-                          <h4 className="font-medium text-sm text-black leading-tight mb-1">{item.product.name}</h4>
-                          <p className="text-[10px] text-gray-400 uppercase tracking-widest">
-                            {item.product.category?.name}
-                          </p>
-                       </div>
-                       <p className="text-sm font-light text-black">${item.product.price * item.quantity}</p>
+                      <div>
+                        <h4 className="font-medium text-sm text-black leading-tight mb-1">{item.product.name}</h4>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                          {item.product.category?.name}
+                        </p>
+                      </div>
+                      <p className="text-sm font-light text-black">${item.product.price * item.quantity}</p>
                     </div>
-                    
+
                     <div className="flex items-center justify-between mt-4">
                       <div className="flex items-center border border-gray-200 rounded-full px-2 py-1">
                         <button
