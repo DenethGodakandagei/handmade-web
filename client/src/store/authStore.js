@@ -18,6 +18,25 @@ const useAuthStore = create((set) => ({
   loading: false,
   error: null,
   
+  fetchMe: async () => {
+    // optional logic to re-fetch user from backend on mount?
+    try {
+      const response = await authService.getMe();
+      // response might be { success: true, data: user }
+      const currentUser = response.data || response;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      set({ user: currentUser });
+    } catch(err) {
+      console.error(err);
+      // Only logout on 401? For now prevent auto-logout unless strictly 401
+    }
+  },
+
+  updateUser: (updatedUser) => {
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    set({ user: updatedUser });
+  },
+  
   // Auth Modal State
   isAuthModalOpen: false,
   authModalView: 'login', // 'login' or 'register'

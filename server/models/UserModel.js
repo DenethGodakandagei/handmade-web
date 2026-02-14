@@ -16,10 +16,19 @@ const UserSchema = new mongoose.Schema({
       'Please add a valid email'
     ]
   },
+  isSeller: {
+    type: Boolean,
+    default: false
+  },
+  sellerRequestStatus: {
+    type: String,
+    enum: ['not_requested', 'pending', 'approved', 'rejected'],
+    default: 'not_requested'
+  },
   role: {
     type: String,
-    enum: ['buyer', 'artisan', 'admin'],
-    default: 'buyer'
+    enum: ['user', 'admin'],
+    default: 'user'
   },
   password: {
     type: String,
@@ -32,7 +41,17 @@ const UserSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  studioName: String,
+  telephone: String,
+  location: String,
+  category: String,
+  experience: String,
+  skills: [String],
+  bio: String,
+  process: String,
+  portfolio: String,
+  profilePicture: String,
 });
 
 // Encrypt password using bcrypt
@@ -47,7 +66,7 @@ UserSchema.pre('save', async function(next) {
 
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function() {
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this._id, role: this.role, isSeller: this.isSeller }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE
   });
 };

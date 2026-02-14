@@ -7,13 +7,15 @@ import {
   resetPassword,
   updateDetails,
   updatePassword,
-  logout
+  logout,
+  becomeSeller
 } from '../controllers/authController.js';
 
 import { protect } from '../middleware/authMiddleware.js';
 
 import { validate } from '../middleware/validationMiddleware.js';
 import { registerSchema, loginSchema } from '../validation/authValidation.js';
+import { becomeSellerSchema } from '../validation/sellerValidation.js';
 
 const router = express.Router();
 
@@ -90,6 +92,7 @@ router.get('/logout', logout);
 router.get('/me', protect, getMe);
 router.put('/updatedetails', protect, updateDetails);
 router.put('/updatepassword', protect, updatePassword);
+router.put('/becomeseller', protect, validate(becomeSellerSchema), becomeSeller);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
 

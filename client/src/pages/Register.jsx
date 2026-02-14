@@ -13,17 +13,27 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    role: 'buyer'
+    confirmPassword: ''
   });
+  const [passwordError, setPasswordError] = useState('');
   const { register, loading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === 'confirmPassword' || e.target.name === 'password') {
+      setPasswordError('');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+    const { confirmPassword, ...dataToSend } = formData;
+    // We send confirmPassword to backend too because backend validation requires it now
     const success = await register(formData);
     if (success) {
       navigate('/');
@@ -66,40 +76,6 @@ const Register = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Role Selection - Emotional Radios */}
-              <div className="grid grid-cols-2 gap-4">
-                 <button 
-                   type="button"
-                   onClick={() => setFormData({...formData, role: 'buyer'})}
-                   className={`flex flex-col items-center gap-4 p-8 rounded-[2.5rem] border-2 transition-all duration-500 relative overflow-hidden group ${formData.role === 'buyer' ? 'border-primary bg-primary/5 shadow-xl shadow-primary/5' : 'border-gray-50 bg-gray-50/50 hover:bg-white hover:border-gray-200'}`}
-                 >
-                   {formData.role === 'buyer' && (
-                      <motion.div layoutId="role-bg" className="absolute inset-0 bg-primary/5 -z-10" />
-                   )}
-                   <div className={`p-4 rounded-2xl transition-all ${formData.role === 'buyer' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white text-gray-300 group-hover:text-black'}`}>
-                      <ShoppingBag size={24} />
-                   </div>
-                   <div className="text-center">
-                      <span className={`block text-[11px] font-black uppercase tracking-widest ${formData.role === 'buyer' ? 'text-black' : 'text-gray-400'}`}>Collector</span>
-                      <span className="text-[9px] text-gray-400 font-medium">Acquire treasures</span>
-                   </div>
-                 </button>
-
-                 <button 
-                   type="button"
-                   onClick={() => setFormData({...formData, role: 'artisan'})}
-                   className={`flex flex-col items-center gap-4 p-8 rounded-[2.5rem] border-2 transition-all duration-500 relative overflow-hidden group ${formData.role === 'artisan' ? 'border-primary bg-primary/5 shadow-xl shadow-primary/5' : 'border-gray-50 bg-gray-50/50 hover:bg-white hover:border-gray-200'}`}
-                 >
-                   <div className={`p-4 rounded-2xl transition-all ${formData.role === 'artisan' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white text-gray-300 group-hover:text-black'}`}>
-                      <Briefcase size={24} />
-                   </div>
-                   <div className="text-center">
-                      <span className={`block text-[11px] font-black uppercase tracking-widest ${formData.role === 'artisan' ? 'text-black' : 'text-gray-400'}`}>Artisan</span>
-                      <span className="text-[9px] text-gray-400 font-medium">Exhibit mastery</span>
-                   </div>
-                 </button>
-              </div>
-
               <div className="space-y-8">
                 <div className="space-y-3">
                   <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.4em] text-primary ml-6">Personal Code</Label>
@@ -149,6 +125,26 @@ const Register = () => {
                       className="w-full bg-gray-50/50 border-gray-100 pl-20 pr-10 py-5 rounded-[2.5rem] focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-bold uppercase tracking-widest placeholder:text-gray-200"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="confirmPassword" className={`text-[10px] font-black uppercase tracking-[0.4em] ml-6 ${passwordError ? 'text-red-500' : 'text-primary'}`}>Confirm Master Key</Label>
+                  <div className="relative group">
+                    <Lock className={`absolute left-8 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors ${passwordError ? 'text-red-400' : 'text-gray-300'}`} size={18} />
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="REPEAT PASSWORD"
+                      className={`w-full bg-gray-50/50 border-gray-100 pl-20 pr-10 py-5 rounded-[2.5rem] focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-bold uppercase tracking-widest placeholder:text-gray-200 ${passwordError ? 'border-red-500 ring-2 ring-red-100' : ''}`}
+                    />
+                  </div>
+                  {passwordError && (
+                    <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest ml-6 mt-1">{passwordError}</p>
+                  )}
                 </div>
               </div>
 

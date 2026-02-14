@@ -16,6 +16,10 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string().min(6, 'Confirm Password must be at least 6 characters'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 const AuthModal = () => {
@@ -71,7 +75,7 @@ const AuthModal = () => {
   const onRegister = async (data) => {
     setLoading(true);
     try {
-      await registerUser({ name: data.name, email: data.email, password: data.password });
+      await registerUser({ name: data.name, email: data.email, password: data.password, confirmPassword: data.confirmPassword });
       toast.success('Account created.');
       closeAuthModal();
       resetRegister();
@@ -178,6 +182,16 @@ const AuthModal = () => {
                       className="w-full border-b border-gray-200 py-3 text-sm outline-none placeholder:text-gray-300 focus:border-black transition-colors bg-transparent"
                     />
                     {registerErrors.password && <p className="text-[10px] text-red-500">{registerErrors.password.message}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <input
+                      {...registerRegister('confirmPassword')}
+                      type="password"
+                      placeholder="Confirm Password"
+                      className="w-full border-b border-gray-200 py-3 text-sm outline-none placeholder:text-gray-300 focus:border-black transition-colors bg-transparent"
+                    />
+                    {registerErrors.confirmPassword && <p className="text-[10px] text-red-500">{registerErrors.confirmPassword.message}</p>}
                   </div>
                 </div>
 
