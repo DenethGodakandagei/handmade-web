@@ -41,7 +41,7 @@ export const login = async (req, res, next) => {
 // @access    Private
 export const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await authService.getUserById(req.user.id);
     sendSuccess(res, 200, 'Current user', user);
   } catch (err) {
     next(err);
@@ -70,10 +70,7 @@ export const updateDetails = async (req, res, next) => {
       email: req.body.email
     };
 
-    const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
-      new: true,
-      runValidators: true
-    });
+    const user = await authService.updateUserDetails(req.user.id, fieldsToUpdate);
 
     sendSuccess(res, 200, 'User details updated', user);
   } catch (err) {
@@ -86,15 +83,7 @@ export const updateDetails = async (req, res, next) => {
 // @access    Private
 export const updatePassword = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).select('+password');
-
-    // Check current password
-    if (!(await user.matchPassword(req.body.currentPassword))) {
-      return next(new ErrorResponse('Incorrect password', 401));
-    }
-
-    user.password = req.body.newPassword;
-    await user.save();
+    const user = await authService.updateUserPassword(req.user.id, req.body.currentPassword, req.body.newPassword);
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
@@ -110,6 +99,18 @@ export const forgotPassword = async (req, res, next) => {
 export const resetPassword = async (req, res, next) => {
   // Placeholder for reset password logic
   return next(new ErrorResponse('Reset password not implemented yet', 501));
+};
+
+// @desc      Submit seller application
+// @route     PUT /api/v1/auth/becomeseller
+// @access    Private
+export const becomeSeller = async (req, res, next) => {
+  try {
+    const user = await authService.becomeSeller(req.user.id, req.body);
+    sendSuccess(res, 200, 'Seller application submitted', user);
+  } catch (err) {
+    next(err);
+  }
 };
 
 // Get token from model, create cookie and send response

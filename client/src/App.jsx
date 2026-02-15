@@ -9,7 +9,16 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ProductList from './pages/ProductList';
 import ProductDetails from './pages/ProductDetails';
-import ArtisanDashboard from './pages/ArtisanDashboard';
+import ProtectedSellerRoute from './components/ProtectedSellerRoute';
+import DashboardLayout from './components/dashboard/DashboardLayout';
+import Overview from './pages/dashboard/Overview';
+import Products from './pages/dashboard/Products';
+import Orders from './pages/dashboard/Orders';
+import Settings from './pages/dashboard/Settings';
+import Storefront from './pages/dashboard/Storefront';
+import Messages from './pages/dashboard/Messages';
+import Customizations from './pages/dashboard/Customizations';
+import MainLayout from './components/MainLayout';
 import AdminDashboard from './pages/AdminDashboard';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
@@ -41,30 +50,53 @@ function App() {
 
   return (
     <div className="flex flex-col min-h-screen relative font-sans antialiased text-gray-900 selection:bg-primary/20 selection:text-primary">
-      <Navbar />
-      <CartSidebar />
-      <AuthModal />
-      <main className="flex-grow">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/artisans" element={<Artisans />} />
-          <Route path="/artisans/apply" element={<ArtisanApplication />} />
-          
-          <Route path="/products" element={<ProductList />} />
-          <Route path="/products/:id" element={<ProductDetails />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/support" element={<Support />} />
-          
-          {/* Dashboard Routes (Unified via Layout inside components) */}
+          {/* Main Public Layout */}
+          <Route element={<MainLayout />}>
+             <Route path="/" element={<Home />} />
+             <Route path="/artisans" element={<Artisans />} />
+             <Route path="/artisans/apply" element={<ArtisanApplication />} />
+             <Route path="/products" element={<ProductList />} />
+             <Route path="/products/:id" element={<ProductDetails />} />
+             <Route path="/contact" element={<Contact />} />
+             <Route path="/support" element={<Support />} />
+             <Route 
+                path="/orders" 
+                element={
+                  <ProtectedRoute>
+                    <OrderHistory />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/checkout" 
+                element={
+                  <ProtectedRoute>
+                    <Checkout />
+                  </ProtectedRoute>
+                } 
+              />
+          </Route>
+
+          {/* Dashboard Layouts */}
           <Route 
             path="/dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['artisan']}>
-                <ArtisanDashboard />
-              </ProtectedRoute>
+              <ProtectedSellerRoute>
+                 <DashboardLayout />
+              </ProtectedSellerRoute>
             } 
-          />
-          <Route 
+          >
+             <Route index element={<Overview />} />
+             <Route path="products" element={<Products />} />
+             <Route path="orders" element={<Orders />} />
+             <Route path="customizations" element={<Customizations />} />
+             <Route path="settings" element={<Settings />} />
+             <Route path="storefront" element={<Storefront />} />
+             <Route path="messages" element={<Messages />} />
+          </Route>
+
+           <Route 
             path="/admin" 
             element={
               <ProtectedRoute allowedRoles={['admin']}>
@@ -73,29 +105,9 @@ function App() {
             } 
           />
           
-          <Route 
-            path="/orders" 
-            element={
-              <ProtectedRoute>
-                <OrderHistory />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/checkout" 
-            element={
-              <ProtectedRoute>
-                <Checkout />
-              </ProtectedRoute>
-            } 
-          />
-          
           {/* Redirects */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </main>
-      <Footer />
       <Toaster position="bottom-right" expand={false} richColors />
     </div>
   );

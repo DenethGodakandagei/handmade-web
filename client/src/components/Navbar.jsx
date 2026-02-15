@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Search, Menu, X, User } from 'lucide-react';
+import { ShoppingBag, Menu, User } from 'lucide-react';
 import useCartStore from '../store/cartStore';
 import useAuthStore from '../store/authStore';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+// DropdownMenu removed
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -25,6 +20,12 @@ const Navbar = () => {
   const location = useLocation();
   const { openCart, items } = useCartStore();
   const { user, logout, openAuthModal, isAuthenticated } = useAuthStore();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const handleLogout = () => {
+      setIsSheetOpen(false);
+      logout();
+  }
 
   const validItems = Array.isArray(items) ? items.filter(item => item && item.product) : [];
   const totalItems = validItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -37,8 +38,8 @@ const Navbar = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${isScrolled ? 'bg-white/80 backdrop-blur-md py-4' : 'bg-transparent py-6'
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-[padding-top,padding-bottom,background-color,backdrop-filter,box-shadow] duration-500 ease-out ${isScrolled ? 'bg-white/80 backdrop-blur-md py-4' : 'bg-transparent py-6'}`}
+      style={{ paddingRight: 'var(--removed-body-scroll-bar-size)' }}
     >
       <div className="px-6 md:px-12 grid grid-cols-12 items-center">
 
@@ -93,24 +94,37 @@ const Navbar = () => {
 
         {/* Right Nav */}
         <div className="col-span-2 md:col-span-4 flex items-center justify-end space-x-6">
-          <button className="hidden sm:block text-black hover:opacity-50 transition-opacity">
-            <Search className="w-4 h-4" />
-          </button>
+          {/* Search Icon Removed */}
 
           {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-auto p-0 hover:bg-transparent">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-auto p-0 hover:bg-transparent cursor-pointer">
                   <User className="w-5 h-5 text-black hover:opacity-50 transition-opacity" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 border-none shadow-xl bg-white rounded-sm p-2">
-                <DropdownMenuItem asChild><Link to="/dashboard">Dashboard</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/orders">Orders</Link></DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md border-l border-gray-100 bg-white p-10 flex flex-col h-full data-[state=open]:duration-500">
+                 <SheetHeader className="mb-12 text-left">
+                   <SheetTitle className="font-serif italic text-3xl font-light">Account.</SheetTitle>
+                   <SheetDescription className="text-gray-400 text-xs tracking-widest uppercase">
+                      Welcome back, {user?.name || 'Artisan'}
+                   </SheetDescription>
+                 </SheetHeader>
+
+                 <div className="flex-1 flex flex-col space-y-8">
+                    <Link onClick={() => setIsSheetOpen(false)} to="/dashboard" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Dashboard</Link>
+                    <Link onClick={() => setIsSheetOpen(false)} to="/orders" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">My Orders</Link>
+                    <Link onClick={() => setIsSheetOpen(false)} to="/profile" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Profile</Link>
+                    <Link onClick={() => setIsSheetOpen(false)} to="/artisans/apply" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 opacity-50 cursor-pointer">Sell on Guild</Link>
+                 </div>
+
+                 <div className="mt-auto pt-8 border-t border-gray-100">
+                    <button onClick={handleLogout} className="text-xs uppercase tracking-[0.2em] font-bold text-black hover:text-red-500 transition-colors cursor-pointer">
+                       Log Out
+                    </button>
+                 </div>
+              </SheetContent>
+            </Sheet>
           ) : (
             <button
               onClick={() => openAuthModal('login')}
