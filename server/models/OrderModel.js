@@ -56,4 +56,7 @@ const OrderSchema = new mongoose.Schema({
   }
 });
 
+// Index for faster queries by user (Critical for scale)
+OrderSchema.index({ user: 1 });
+
 export default mongoose.model('Order', OrderSchema);

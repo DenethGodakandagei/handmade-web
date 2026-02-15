@@ -1,6 +1,7 @@
 import { ErrorResponse, sendSuccess } from '../utils/responseUtils.js';
 import * as orderService from '../services/orderService.js';
 import Product from '../models/ProductModel.js';
+import { allowedCountries } from '../utils/allowedCountries.js';
 
 // @desc      Create new order
 // @route     POST /api/v1/orders
@@ -13,17 +14,34 @@ export const createOrder = async (req, res, next) => {
       paymentMethod
     } = req.body;
 
+    // Validate Country
+    if (shippingAddress && shippingAddress.country) {
+       if (!allowedCountries.has(shippingAddress.country)) {
+          return next(new ErrorResponse(`Shipping to ${shippingAddress.country} is not currently supported.`, 400));
+       }
+    }
+
     if (orderItems && orderItems.length === 0) {
       return next(new ErrorResponse('No order items', 400));
     }
 
     // Verify products and calculate prices dynamically
+    // Optimized for scale: Fetch all products in one parallel query
+    const productIds = orderItems.map(item => item.product);
+    const products = await Product.find({ _id: { $in: productIds } });
+    
+    // Create a map for O(1) fast lookup
+    const productMap = new Map();
+    products.forEach(p => productMap.set(p._id.toString(), p));
+
     let totalAmount = 0;
     let isPreOrderOrder = false;
     const finalOrderItems = [];
+    const productsToUpdate = [];
 
+    // Process items in memory
     for (const item of orderItems) {
-      const product = await Product.findById(item.product);
+      const product = productMap.get(item.product);
 
       if (!product) {
          return next(new ErrorResponse(`Product not found with id ${item.product}`, 404));
@@ -37,9 +55,9 @@ export const createOrder = async (req, res, next) => {
              return next(new ErrorResponse(`Product ${product.name} is out of stock`, 400));
         }
       } else {
-         // Decrement stock for normal items
+         // Mark logic for update (Verified in memory)
          product.stock = product.stock - item.quantity;
-         await product.save();
+         productsToUpdate.push(product);
       }
 
       finalOrderItems.push({
@@ -47,11 +65,14 @@ export const createOrder = async (req, res, next) => {
         name: product.name,
         quantity: item.quantity,
         price: product.price,
-        image: product.images[0] // Add image reference for convenience
+        image: product.images[0]
       });
 
       totalAmount += product.price * item.quantity;
     }
+
+    // Perform all DB writes in parallel (Non-blocking)
+    await Promise.all(productsToUpdate.map(p => p.save()));
 
     const order = await orderService.createOrder({
       user: req.user.id,

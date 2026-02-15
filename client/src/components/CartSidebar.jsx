@@ -26,10 +26,15 @@ const CartSidebar = () => {
   const total = subtotal + shipping;
 
   const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = React.useState(false);
 
   const handleCheckout = () => {
-    closeCart();
-    navigate('/checkout');
+    setIsNavigating(true);
+    setTimeout(() => {
+      closeCart();
+      navigate('/checkout');
+      setIsNavigating(false); // Reset in case they come back
+    }, 600);
   };
 
   return (
@@ -124,8 +129,16 @@ const CartSidebar = () => {
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
-            <Button className="w-full h-14 bg-black text-white hover:bg-gray-800 rounded-none text-xs uppercase tracking-[0.2em] font-bold transition-all" onClick={handleCheckout}>
-              Proceed to Checkout
+            <Button 
+              className="w-full h-14 bg-black text-white hover:bg-gray-800 rounded-none text-xs uppercase tracking-[0.2em] font-bold transition-all cursor-pointer disabled:opacity-70" 
+              onClick={handleCheckout}
+              disabled={isNavigating}
+            >
+              {isNavigating ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Proceed to Checkout'
+              )}
             </Button>
           </div>
         )}
