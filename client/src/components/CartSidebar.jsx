@@ -2,7 +2,7 @@ import React from 'react';
 import { Minus, Plus, X } from 'lucide-react';
 import useCartStore from '../store/cartStore';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Sheet,
   SheetContent,
@@ -61,17 +61,29 @@ const CartSidebar = () => {
             <div className="space-y-8">
               {validItems.map((item) => (
                 <div key={item.product._id} className="flex gap-6">
-                  <div className="h-24 w-20 bg-gray-50 flex-shrink-0 overflow-hidden">
-                    <img
-                      src={item.product.images?.[0] || 'https://via.placeholder.com/100'}
-                      alt={item.product.name}
-                      className="h-full w-full object-cover mix-blend-multiply"
-                    />
+                  <div className="h-24 w-20 bg-gray-50 flex-shrink-0 overflow-hidden group cursor-pointer">
+                    <Link 
+                      to={`/collection/${item.product._id}`} 
+                      state={{ product: item.product, from: 'cart', label: 'Cart' }}
+                      onClick={closeCart}
+                    >
+                      <img
+                        src={item.product.images?.[0] || 'https://via.placeholder.com/100'}
+                        alt={item.product.name}
+                        className="h-full w-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </Link>
                   </div>
                   <div className="flex flex-1 flex-col justify-between py-1">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-medium text-sm text-black leading-tight mb-1">{item.product.name}</h4>
+                        <Link 
+                           to={`/collection/${item.product._id}`} 
+                           state={{ product: item.product, from: 'cart', label: 'Cart' }}
+                           onClick={closeCart}
+                        >
+                           <h4 className="font-medium text-sm text-black leading-tight mb-1 hover:underline">{item.product.name}</h4>
+                        </Link>
                         <p className="text-[10px] text-gray-400 uppercase tracking-widest">
                           {item.product.category?.name}
                         </p>
@@ -137,7 +149,7 @@ const CartSidebar = () => {
               {isNavigating ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                'Proceed to Checkout'
+                'Checkout'
               )}
             </Button>
           </div>

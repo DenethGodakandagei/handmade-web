@@ -18,10 +18,10 @@ const Footer = () => {
 
         <div className="space-y-4">
            <h4 className="text-[10px] uppercase tracking-widest text-gray-400 mb-4">Shop</h4>
-           <Link to="/products" className="block hover:underline underline-offset-4 decoration-1">All Arrivals</Link>
-           <Link to="/products?category=Ceramics" className="block hover:underline underline-offset-4 decoration-1">Ceramics</Link>
-           <Link to="/products?category=Furniture" className="block hover:underline underline-offset-4 decoration-1">Furniture</Link>
-           <Link to="/products?category=Textile" className="block hover:underline underline-offset-4 decoration-1">Textile</Link>
+           <Link to="/collection" className="block hover:underline underline-offset-4 decoration-1">All Arrivals</Link>
+           <Link to="/collection?category=Ceramics" className="block hover:underline underline-offset-4 decoration-1">Ceramics</Link>
+           <Link to="/collection?category=Furniture" className="block hover:underline underline-offset-4 decoration-1">Furniture</Link>
+           <Link to="/collection?category=Textile" className="block hover:underline underline-offset-4 decoration-1">Textile</Link>
         </div>
 
         <div className="space-y-4">

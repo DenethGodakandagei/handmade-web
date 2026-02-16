@@ -83,7 +83,7 @@ const Home = () => {
            <div className="absolute inset-0 bg-black/5" />
            <div className="absolute bottom-6 left-6 p-6">
               <Button asChild variant="link" className="text-white text-xs uppercase tracking-widest hover:text-white/80 p-0 h-auto">
-                 <Link to="/products">Explore Collection <ArrowRight className="ml-2 w-3 h-3" /></Link>
+                 <Link to="/collection">Explore Collection <ArrowRight className="ml-2 w-3 h-3" /></Link>
               </Button>
            </div>
         </div>
@@ -118,7 +118,7 @@ const Home = () => {
       <section className="pb-32 px-6 md:px-12">
          <div className="flex justify-between items-end mb-20">
             <h3 className="text-xl tracking-tight">Selected Works</h3>
-            <Link to="/products" className="text-xs uppercase tracking-widest hover:underline underline-offset-4 decoration-1">
+            <Link to="/collection" className="text-xs uppercase tracking-widest hover:underline underline-offset-4 decoration-1">
                View All
             </Link>
          </div>
@@ -165,7 +165,7 @@ const Home = () => {
                   </div>
                   <div className="flex flex-col space-y-1">
                      <div className="flex justify-between items-baseline">
-                        <Link to={`/products/${product._id}`}>
+                        <Link to={`/collection/${product._id}`}>
                            <h4 className="text-lg font-medium tracking-tight group-hover:text-gray-600 transition-colors">{product.name}</h4>
                         </Link>
                         <span className="text-sm font-light text-gray-500">${product.price}</span>

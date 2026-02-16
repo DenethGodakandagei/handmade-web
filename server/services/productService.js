@@ -68,7 +68,7 @@ export const getAllProducts = async (reqQuery) => {
 export const getProductById = async (id) => {
     return await Product.findById(id)
       .populate('category', 'name')
-      .populate('artisan', 'name')
+      .populate('artisan', 'name email bio studioName location telephone skills experience portfolio profilePicture')
       .populate('reviews');
 }
 
