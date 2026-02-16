@@ -44,8 +44,8 @@ function App() {
              <Route path="/" element={<Home />} />
              <Route path="/artisans" element={<Artisans />} />
              <Route path="/artisans/apply" element={<ArtisanApplication />} />
-             <Route path="/products" element={<ProductList />} />
-             <Route path="/products/:id" element={<ProductDetails />} />
+             <Route path="/collection" element={<ProductList />} />
+             <Route path="/collection/:id" element={<ProductDetails />} />
              <Route path="/contact" element={<Contact />} />
              <Route path="/support" element={<Support />} />
               {/* Orders route removed as per request */}

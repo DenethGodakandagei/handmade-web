@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
  * @param {string} targetCurrency - The currency code to convert to (e.g., 'LKR')
  * @returns {object} - { convertPrice, currencySymbol, loading, error, rate }
  */
-export const useCurrency = (targetCurrency) => {
+export const useCurrency = (targetCurrency = 'USD') => {
     const [rate, setRate] = useState(1);
     const [currencySymbol, setCurrencySymbol] = useState('$');
     const [loading, setLoading] = useState(false);

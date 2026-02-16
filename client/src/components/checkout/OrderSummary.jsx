@@ -14,12 +14,16 @@ export const OrderSummary = ({ items, subtotal, shippingCost, wrappingCost, tax,
          <div className="space-y-8">
              {items.map(item => (
                   <div key={item.product._id} className="flex justify-between items-start group">
-                      <Link to={`/products/${item.product._id}`} className="flex gap-6 hover:opacity-70 transition-opacity">
+                      <Link 
+                        to={`/collection/${item.product._id}`} 
+                        state={{ product: item.product, from: 'checkout' }}
+                        className="flex gap-6 group/item cursor-pointer"
+                      >
                           <div className="w-16 h-20 bg-gray-200 overflow-hidden relative flex-shrink-0">
-                              <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 ease-out" />
+                              <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover grayscale-[20%] group-hover/item:grayscale-0 group-hover/item:scale-105 transition-all duration-700 ease-out" />
                           </div>
                           <div className="py-1">
-                              <h4 className="font-medium text-sm text-black leading-tight mb-2 tracking-tight">{item.product.name}</h4>
+                              <h4 className="font-medium text-sm text-black leading-tight mb-2 tracking-tight group-hover/item:underline">{item.product.name}</h4>
                               <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium flex items-center gap-2">
                                   Qty {item.quantity}
                               </p>

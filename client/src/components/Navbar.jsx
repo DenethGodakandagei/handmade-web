@@ -43,7 +43,7 @@ const Navbar = () => {
 
         {/* Left Nav */}
         <nav className="col-span-4 hidden md:flex items-center space-x-8">
-          <Link to="/products" className="text-xs font-medium uppercase tracking-[0.1em] text-black hover:opacity-50 transition-opacity">
+          <Link to="/collection" className="text-xs font-medium uppercase tracking-[0.1em] text-black hover:opacity-50 transition-opacity">
             Collection
           </Link>
           <Link to="/artisans" className="text-xs font-medium uppercase tracking-[0.1em] text-black hover:opacity-50 transition-opacity">
@@ -68,7 +68,7 @@ const Navbar = () => {
               </SheetHeader>
               <div className="flex flex-col gap-6">
                 <Link to="/" className="text-2xl font-light tracking-tight">Index</Link>
-                <Link to="/products" className="text-2xl font-light tracking-tight">Collection</Link>
+                <Link to="/collection" className="text-2xl font-light tracking-tight">Collection</Link>
                 <Link to="/about" className="text-2xl font-light tracking-tight">Philosophy</Link>
                 <div className="h-px bg-gray-100 my-2" />
                 {!isAuthenticated && (

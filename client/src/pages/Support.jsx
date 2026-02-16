@@ -82,7 +82,7 @@ const Support = () => {
        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-32">
           {[
             { icon: Package, title: "Track Order", desc: "Locate your shipment", link: "/orders" },
-            { icon: ShieldCheck, title: "Verify Lineage", desc: "Check authenticity", link: "/products" },
+            { icon: ShieldCheck, title: "Verify Lineage", desc: "Check authenticity", link: "/collection" },
             { icon: RefreshCw, title: "Returns", desc: "Report damage", link: "/contact" },
             { icon: BookOpen, title: "Journal", desc: "Read preservation guide", link: "/blog" },
           ].map((item, i) => (
