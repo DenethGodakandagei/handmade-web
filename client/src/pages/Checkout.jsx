@@ -2,50 +2,153 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Lock, CreditCard, Truck, Hammer, ChevronRight } from 'lucide-react';
 import useCartStore from '../store/cartStore';
 import orderService from '../api/services/orderService';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { countries } from "@/lib/countries"
+import { detectUserCountry } from '@/lib/geolocation';
+import { useCurrency } from '@/hooks/useCurrency';
 
+// Ui Components
+import { InputField } from '@/components/ui/InputField';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { Check } from 'lucide-react'; // Added Check icon
+
+// Checkout Components
+import { Logistics } from '@/components/checkout/Logistics';
+import { GiftOptions } from '@/components/checkout/GiftOptions';
+import { PaymentInfo } from '@/components/checkout/PaymentInfo';
+import { OrderSummary } from '@/components/checkout/OrderSummary';
+
+// Enhanced Schema
 const checkoutSchema = z.object({
   firstName: z.string().min(2, 'First name is required'),
   lastName: z.string().min(2, 'Last name is required'),
   email: z.string().email('Invalid email address'),
-  address: z.string().min(5, 'Address is required'),
-  city: z.string().min(2, 'City is required'),
-  postalCode: z.string().min(3, 'Postal code is required'),
-  country: z.string().min(2, 'Country is required'),
-  cardNumber: z.string().min(16, 'Invalid card number').max(19),
-  expiry: z.string().min(4, 'Invalid expiry'),
-  cvc: z.string().min(3, 'Invalid CVC').max(4),
+  phone: z.string().min(5, 'Valid phone number is required'),
+  address: z.string().min(5, 'Address is required').optional().or(z.literal('')),
+  city: z.string().min(2, 'City is required').optional().or(z.literal('')),
+  postalCode: z.string().min(3, 'Postal code is required').optional().or(z.literal('')),
+  country: z.string().min(2, 'Country is required').optional().or(z.literal('')),
+  // New Fields
+  isGift: z.boolean().optional(),
+  giftNote: z.string().optional(),
+  useWrapping: z.boolean().optional(),
 });
 
 const Checkout = () => {
   const { items, clearCart } = useCartStore();
-  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const shipping = subtotal > 100 ? 0 : 12.99;
-  const total = subtotal + shipping;
-
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState('standard');
+  const [addressMode, setAddressMode] = useState('new'); 
+  const [couponCode, setCouponCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const hasRedirected = React.useRef(false);
+
+  // Set Page Title
+  React.useEffect(() => {
+    document.title = "Secure Checkout | Artisan";
+    return () => { document.title = "Artisan."; }; // Reset on unmount
+  }, []);
+
+  // Redirect if cart is empty
+  React.useEffect(() => {
+    if (items.length === 0 && !hasRedirected.current) {
+      hasRedirected.current = true;
+      toast.error('Cart is empty', { description: 'Please add items to your cart first.', id: 'empty-cart-toast' });
+      navigate('/products');
+    }
+  }, [items, navigate]);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setValue,
+    watch,
+    formState: { errors }
   } = useForm({
     resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+       address: '', city: '', postalCode: '', country: '', phone: '',
+       isGift: false, useWrapping: false
+    }
   });
 
+  // Derived calculations
+  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const shippingCost = shippingMethod === 'express' ? 15 : 5;
+  const wrappingCost = watch('useWrapping') ? 5 : 0;
+  const tax = 3; 
+  const total = subtotal + shippingCost + wrappingCost + tax - discount;
+  
+  const selectedCountry = watch('country');
+  
+  // State for mobile details
+  const [countryCode, setCountryCode] = useState('+1');
+  const [userCurrencyCode, setUserCurrencyCode] = useState('USD');
+  const { formatPrice } = useCurrency(userCurrencyCode);
+  
+  // Section Completion Logic
+  const isIdentityComplete = 
+    watch('firstName')?.length >= 2 && 
+    watch('lastName')?.length >= 2 && 
+    watch('email')?.includes('@') && 
+    watch('phone')?.length >= 5 &&
+    !errors.firstName && !errors.lastName && !errors.email && !errors.phone;
+
+  // Auto-detect country from IP
+  React.useEffect(() => {
+    // Keep heavy logic out of component
+    detectUserCountry(countries).then((detected) => {
+        if (detected) {
+            // Only update if user hasn't already made a selection (naive check, but effective for init)
+            if (!selectedCountry) {
+                setValue('country', detected.name);
+            }
+            if (countryCode === '+1' && detected.dial_code) {
+                setCountryCode(detected.dial_code);
+            }
+            if (detected.currency) {
+                setUserCurrencyCode(detected.currency);
+            }
+        }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
+
+  const handleCountrySelect = (val) => {
+     setValue('country', val, { shouldValidate: true });
+  };
+
+  const handleApplyCoupon = () => {
+    if (couponCode.trim().toUpperCase() === 'SAVE5') {
+       setDiscount(5);
+       toast.success('Code Accepted', { description: 'Discount applied.' });
+    } else {
+       toast.error('Invalid Code', { description: 'Please check and try again.' });
+       setDiscount(0);
+    }
+  };
+
   const onSubmit = async (data) => {
+    let finalAddress = {};
+    const fullPhone = `${countryCode} ${data.phone}`;
+
+    if (!data.address || !data.city) {
+        toast.error('Incomplete Details', { description: 'Delivery coordinates required.' });
+        return;
+    }
+    finalAddress = {
+        address: data.address,
+        city: data.city,
+        postalCode: data.postalCode,
+        country: data.country
+    };
+
     setLoading(true);
     try {
-      // Prepare order data matching OrderModel
       const orderData = {
         products: items.map(item => ({
           product: item.product._id,
@@ -54,213 +157,179 @@ const Checkout = () => {
           price: item.product.price
         })),
         totalAmount: total,
-        shippingAddress: {
-          address: data.address,
-          city: data.city,
-          postalCode: data.postalCode,
-          country: data.country
-        },
+        shippingAddress: finalAddress,
+        isGift: data.isGift,
+        giftNote: data.giftNote,
+        giftWrapping: data.useWrapping,
         paymentResult: {
           id: `PAY-${Date.now()}`,
           status: 'COMPLETED',
           update_time: new Date().toISOString(),
-          email_address: data.email
+          email_address: data.email,
+          phone: fullPhone
         }
       };
 
       await orderService.create(orderData);
-      
       clearCart();
-      toast.success('Acquisition Successful', {
-        description: 'Your heritage sequence has been initiated.',
-      });
-      navigate('/orders');
+      toast.success('Acquisition Complete');
+      navigate('/order-success');
     } catch (error) {
       console.error(error);
-      toast.error('Transaction Failed', {
-        description: 'Secure handshake rejected. Please verify your credentials.',
-      });
+      toast.error('Transaction Failed');
     } finally {
       setLoading(false);
     }
   };
 
-  if (items.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6]">
-        <div className="text-center space-y-6">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-300">
-            <Lock size={40} />
-          </div>
-          <h2 className="text-3xl font-black uppercase tracking-tighter">Secure Channel Idle</h2>
-          <Button onClick={() => navigate('/products')} className="px-8 flex items-center space-x-2 rounded-full">
-            <span>Return to Archives</span>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#FAF9F6] py-20">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="mb-12">
-            <h1 className="text-5xl font-black tracking-tighter uppercase mb-4">Secure Acquisition</h1>
-            <div className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                <ShieldCheck size={14} className="text-primary" />
-                <span>256-Bit Encrypted Handshake</span>
+    <div className="bg-white min-h-screen pt-24 pb-32 font-sans text-[#111] selection:bg-black selection:text-white">
+      
+      {/* Header */}
+      <header className="container mx-auto px-6 md:px-12 mb-16">
+        <div className="flex flex-col md:flex-row justify-between items-end pb-8 border-b border-gray-100">
+            <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 block">The Acquisition</span>
+                <h1 className="text-4xl md:text-6xl text-black tracking-tight leading-none">
+                    Checkout <span className="font-serif italic text-gray-300 ml-2">Review</span>
+                </h1>
             </div>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Form */}
-          <div className="space-y-10">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
-              {/* Identity */}
-              <div className="space-y-6">
-                <h3 className="text-sm font-black uppercase tracking-widest flex items-center space-x-2">
-                    <span className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[9px]">1</span>
-                    <span>Identity Verification</span>
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">First Name</Label>
-                        <Input id="firstName" {...register('firstName')} className="bg-white border-gray-100 h-12 rounded-xl" placeholder="Ex. ARUNA" />
-                        {errors.firstName && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.firstName.message}</p>}
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Last Name</Label>
-                        <Input id="lastName" {...register('lastName')} className="bg-white border-gray-100 h-12 rounded-xl" placeholder="Ex. PERERA" />
-                        {errors.lastName && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.lastName.message}</p>}
-                    </div>
+      <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-20">
+        
+        {/* LEFT: Forms */}
+        <div className="lg:col-span-7 py-8 space-y-24">
+           
+           <form id="checkout-form" onSubmit={handleSubmit(onSubmit)}>
+            
+            {/* Section 01: Identity */}
+            <div className="space-y-12">
+                <div className="flex items-baseline gap-4 border-b border-gray-100 pb-4">
+                    {isIdentityComplete ? (
+                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+                            <Check className="text-white w-3 h-3" strokeWidth={4} />
+                        </div>
+                    ) : (
+                        <span className="text-xl font-light text-gray-300">01</span>
+                    )}
+                    <h2 className="text-xl font-medium tracking-tight uppercase">Identity</h2>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Official Correspondence</Label>
-                    <Input id="email" {...register('email')} className="bg-white border-gray-100 h-12 rounded-xl" placeholder="NAME@DOMAIN.COM" />
-                    {errors.email && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.email.message}</p>}
-                </div>
-              </div>
-
-              {/* Delivery */}
-              <div className="space-y-6">
-                <h3 className="text-sm font-black uppercase tracking-widest flex items-center space-x-2">
-                    <span className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[9px]">2</span>
-                    <span>Logistics Node</span>
-                </h3>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pl-0 md:pl-8">
+                    <InputField label="First Name" register={register} name="firstName" error={errors.firstName} placeholder="Given Name" />
+                    <InputField label="Last Name" register={register} name="lastName" error={errors.lastName} placeholder="Family Name" />
+                    <InputField label="Email Address" register={register} name="email" error={errors.email} placeholder="email@domain.com" />
+                    
+                    {/* Mobile Input with Country Code */}
                     <div className="space-y-2">
-                        <Label htmlFor="address" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Physical Coordinates</Label>
-                        <Input id="address" {...register('address')} className="bg-white border-gray-100 h-12 rounded-xl" placeholder="STREET ADDRESS" />
-                        {errors.address && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.address.message}</p>}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="city" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">City Sector</Label>
-                            <Input id="city" {...register('city')} className="bg-white border-gray-100 h-12 rounded-xl" />
-                            {errors.city && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.city.message}</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="postalCode" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Zone Code</Label>
-                            <Input id="postalCode" {...register('postalCode')} className="bg-white border-gray-100 h-12 rounded-xl" />
-                            {errors.postalCode && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.postalCode.message}</p>}
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="country" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Nation State</Label>
-                        <Input id="country" {...register('country')} className="bg-white border-gray-100 h-12 rounded-xl" />
-                        {errors.country && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.country.message}</p>}
-                    </div>
-                </div>
-              </div>
-
-              {/* Payment */}
-              <div className="space-y-6">
-                <h3 className="text-sm font-black uppercase tracking-widest flex items-center space-x-2">
-                    <span className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[9px]">3</span>
-                    <span>Capital Transfer</span>
-                </h3>
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="cardNumber" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Card Sequence</Label>
-                        <div className="relative">
-                            <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
-                            <Input id="cardNumber" {...register('cardNumber')} className="bg-gray-50 border-transparent pl-12 h-12 rounded-xl" placeholder="0000 0000 0000 0000" />
-                        </div>
-                        {errors.cardNumber && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.cardNumber.message}</p>}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="expiry" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Expiry</Label>
-                            <Input id="expiry" {...register('expiry')} className="bg-gray-50 border-transparent h-12 rounded-xl" placeholder="MM/YY" />
-                            {errors.expiry && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.expiry.message}</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="cvc" className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Security Code</Label>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={14} />
-                                <Input id="cvc" {...register('cvc')} className="bg-gray-50 border-transparent pl-10 h-12 rounded-xl" placeholder="123" />
+                        <label className="text-xs uppercase tracking-[0.15em] font-medium text-gray-400">Mobile</label>
+                        <div className="flex gap-4">
+                            <div className="w-1/3 min-w-[120px]">
+                                <SearchableSelect 
+                                    label=""
+                                    value={countryCode} // Using dial_code as value
+                                    onChange={(val) => setCountryCode(val)} // Update country code state
+                                    options={countries.map(c => ({ value: c.dial_code, label: `${c.code} ${c.dial_code}`, name: c.name, dial_code: c.dial_code, code: c.code }))}
+                                    placeholder="+1"
+                                    renderTrigger={(selected) => <span className="text-lg font-light">{selected ? `${selected.code} ${selected.dial_code}` : "+1"}</span>}
+                                    renderItem={(item) => (
+                                        <div className="flex justify-between w-full">
+                                            <span>{item.name}</span>
+                                            <span className="text-gray-400 font-mono">{item.dial_code}</span>
+                                        </div>
+                                    )}
+                                />
                             </div>
-                            {errors.cvc && <p className="text-red-500 text-[10px] font-bold uppercase">{errors.cvc.message}</p>}
-                        </div>
-                    </div>
-                </div>
-              </div>
-
-              <Button type="submit" disabled={loading} className="w-full btn-premium h-20 text-xs shadow-2xl">
-                {loading ? 'Processing Protocol...' : 'Confirm Acquisition'}
-              </Button>
-            </form>
-          </div>
-
-          {/* Summary */}
-          <div className="lg:sticky lg:top-32 h-fit space-y-8">
-             <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-xl shadow-black/5">
-                <h3 className="text-xl font-black uppercase tracking-tighter mb-8">Manifest</h3>
-                <div className="space-y-6 mb-8">
-                    {items.map(item => (
-                        <div key={item.product._id} className="flex justify-between items-start">
-                            <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 bg-gray-50 rounded-xl overflow-hidden">
-                                    <img src={item.product.images[0]} alt="" className="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold uppercase w-32 truncate">{item.product.name}</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Qty: {item.quantity}</p>
-                                </div>
+                            <div className="flex-1">
+                                <input
+                                type="tel"
+                                {...register('phone')}
+                                onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '')}
+                                inputMode="numeric"
+                                placeholder="000 000 0000"
+                                className="w-full bg-transparent border-b border-gray-200 py-3 text-lg font-light focus:outline-none focus:border-black transition-colors placeholder:text-gray-200"
+                                />
                             </div>
-                            <span className="font-bold text-sm">${(item.product.price * item.quantity).toFixed(2)}</span>
                         </div>
-                    ))}
-                </div>
-                <div className="border-t border-gray-50 pt-6 space-y-3">
-                    <div className="flex justify-between text-xs font-bold uppercase text-gray-400">
-                        <span>Subtotal</span>
-                        <span className="text-black">${total.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-bold uppercase text-gray-400">
-                        <span>Shipping Node</span>
-                        <span className={shipping === 0 ? "text-green-600" : "text-black"}>
-                          {shipping === 0 ? 'Secure Transport Included' : `$${shipping.toFixed(2)}`}
-                        </span>
-                    </div>
-                    <div className="flex justify-between text-lg font-black uppercase pt-4 border-t border-gray-100 mt-4">
-                        <span>Total Due</span>
-                        <span>${total.toFixed(2)}</span>
+                        {errors.phone && <span className="text-xs text-red-500 font-medium tracking-wide">{errors.phone.message}</span>}
                     </div>
                 </div>
-             </div>
+            </div>
 
-             <div className="flex items-center space-x-4 bg-primary/5 p-6 rounded-3xl border border-primary/10">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shrink-0">
-                    <Hammer size={16} />
-                </div>
-                <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
-                    <strong className="text-primary uppercase tracking-widest block mb-1">Direct to Artisan</strong>
-                    By completing this transaction, you are transferring funds directly to the master craftsman's verified wallet.
+            {/* Section 02: Logistics (Imported Component) */}
+            <Logistics 
+                register={register} 
+                errors={errors} 
+                watch={watch} 
+                setValue={setValue} 
+                shippingMethod={shippingMethod} 
+                setShippingMethod={setShippingMethod} 
+            />
+
+            {/* Gift Options (New Feature) */}
+            <GiftOptions register={register} watch={watch} setValue={setValue} />
+
+            {/* Section 03: Payment (Imported Component) */}
+            <PaymentInfo />
+
+            {/* Mobile Manifest - Visible below lg (desktop) breakpoint */}
+            <div className="lg:hidden mt-12 mb-8 border-t border-gray-100 pt-8">
+                <OrderSummary 
+                    items={items}
+                    subtotal={subtotal}
+                    shippingCost={shippingCost}
+                    wrappingCost={wrappingCost}
+                    tax={tax}
+                    discount={discount}
+                    total={total}
+                    userCurrencyCode={userCurrencyCode}
+                    handleApplyCoupon={handleApplyCoupon}
+                    couponCode={couponCode}
+                    setCouponCode={setCouponCode}
+                    isGiftWrapping={watch('useWrapping')}
+                />
+            </div>
+
+            <div className="mt-8 pl-0 md:pl-8">
+                <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-black text-white h-16 text-xs uppercase tracking-[0.25em] font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-4 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                    {loading ? (
+                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        'Confirm Acquisition'
+                    )}
+                </button>
+                <p className="mt-6 text-xs text-gray-400 text-center leading-relaxed max-w-md mx-auto">
+                    By confirming, you agree to our Terms of Service. <br/>
+                    All artifacts are verified authentic.
                 </p>
-             </div>
-          </div>
+            </div>
+
+           </form>
         </div>
+
+        {/* RIGHT: Summary - Desktop Only */}
+        <div className="lg:col-span-5 h-fit lg:sticky lg:top-32 hidden lg:block">
+           <OrderSummary 
+                items={items}
+                subtotal={subtotal}
+                shippingCost={shippingCost}
+                wrappingCost={wrappingCost}
+                tax={tax}
+                discount={discount}
+                total={total}
+                userCurrencyCode={userCurrencyCode}
+                handleApplyCoupon={handleApplyCoupon}
+                couponCode={couponCode}
+                setCouponCode={setCouponCode}
+                isGiftWrapping={watch('useWrapping')}
+            />
+        </div>
+
       </div>
     </div>
   );

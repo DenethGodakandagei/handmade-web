@@ -22,6 +22,8 @@ import MainLayout from './components/MainLayout';
 import AdminDashboard from './pages/AdminDashboard';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
+import OrderSuccess from './pages/OrderSuccess';
+import OrderCancel from './pages/OrderCancel';
 import Contact from './pages/Contact';
 import Support from './pages/Support';
 import useAuthStore from './store/authStore';
@@ -29,21 +31,7 @@ import { Toaster } from '@/components/ui/sonner';
 import CartSidebar from './components/CartSidebar';
 import AuthModal from './components/AuthModal';
 
-// Protected Route Component
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { isAuthenticated, user, loading } = useAuthStore();
-  
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin"></div>
-    </div>
-  );
-  
-  if (!isAuthenticated) return <Navigate to="/login" />;
-  if (allowedRoles && !allowedRoles.includes(user?.role)) return <Navigate to="/" />;
-  
-  return children;
-};
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const { user } = useAuthStore();
@@ -60,19 +48,28 @@ function App() {
              <Route path="/products/:id" element={<ProductDetails />} />
              <Route path="/contact" element={<Contact />} />
              <Route path="/support" element={<Support />} />
-             <Route 
-                path="/orders" 
-                element={
-                  <ProtectedRoute>
-                    <OrderHistory />
-                  </ProtectedRoute>
-                } 
-              />
+              {/* Orders route removed as per request */}
               <Route 
                 path="/checkout" 
                 element={
                   <ProtectedRoute>
                     <Checkout />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/order-success" 
+                element={
+                  <ProtectedRoute>
+                    <OrderSuccess />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/order-cancel" 
+                element={
+                  <ProtectedRoute>
+                    <OrderCancel />
                   </ProtectedRoute>
                 } 
               />

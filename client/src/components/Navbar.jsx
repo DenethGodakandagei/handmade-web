@@ -4,8 +4,6 @@ import { ShoppingBag, Menu, User } from 'lucide-react';
 import useCartStore from '../store/cartStore';
 import useAuthStore from '../store/authStore';
 import { Button } from '@/components/ui/button';
-// DropdownMenu removed
-import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -94,8 +92,6 @@ const Navbar = () => {
 
         {/* Right Nav */}
         <div className="col-span-2 md:col-span-4 flex items-center justify-end space-x-6">
-          {/* Search Icon Removed */}
-
           {isAuthenticated ? (
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
@@ -113,7 +109,6 @@ const Navbar = () => {
 
                  <div className="flex-1 flex flex-col space-y-8">
                     <Link onClick={() => setIsSheetOpen(false)} to="/dashboard" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Dashboard</Link>
-                    <Link onClick={() => setIsSheetOpen(false)} to="/orders" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">My Orders</Link>
                     <Link onClick={() => setIsSheetOpen(false)} to="/profile" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Profile</Link>
                     <Link onClick={() => setIsSheetOpen(false)} to="/artisans/apply" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 opacity-50 cursor-pointer">Sell on Guild</Link>
                  </div>
