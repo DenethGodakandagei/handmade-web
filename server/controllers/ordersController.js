@@ -16,9 +16,9 @@ export const createOrder = async (req, res, next) => {
 
     // Validate Country
     if (shippingAddress && shippingAddress.country) {
-       if (!allowedCountries.has(shippingAddress.country)) {
-          return next(new ErrorResponse(`Shipping to ${shippingAddress.country} is not currently supported.`, 400));
-       }
+      if (!allowedCountries.has(shippingAddress.country)) {
+        return next(new ErrorResponse(`Shipping to ${shippingAddress.country} is not currently supported.`, 400));
+      }
     }
 
     if (orderItems && orderItems.length === 0) {
@@ -29,7 +29,7 @@ export const createOrder = async (req, res, next) => {
     // Optimized for scale: Fetch all products in one parallel query
     const productIds = orderItems.map(item => item.product);
     const products = await Product.find({ _id: { $in: productIds } });
-    
+
     // Create a map for O(1) fast lookup
     const productMap = new Map();
     products.forEach(p => productMap.set(p._id.toString(), p));
@@ -44,20 +44,20 @@ export const createOrder = async (req, res, next) => {
       const product = productMap.get(item.product);
 
       if (!product) {
-         return next(new ErrorResponse(`Product not found with id ${item.product}`, 404));
+        return next(new ErrorResponse(`Product not found with id ${item.product}`, 404));
       }
-      
+
       // Check stock
       if (product.stock < item.quantity) {
         if (product.isPreOrder) {
-            isPreOrderOrder = true;
+          isPreOrderOrder = true;
         } else {
-             return next(new ErrorResponse(`Product ${product.name} is out of stock`, 400));
+          return next(new ErrorResponse(`Product ${product.name} is out of stock`, 400));
         }
       } else {
-         // Mark logic for update (Verified in memory)
-         product.stock = product.stock - item.quantity;
-         productsToUpdate.push(product);
+        // Mark logic for update (Verified in memory)
+        product.stock = product.stock - item.quantity;
+        productsToUpdate.push(product);
       }
 
       finalOrderItems.push({
@@ -65,7 +65,9 @@ export const createOrder = async (req, res, next) => {
         name: product.name,
         quantity: item.quantity,
         price: product.price,
-        image: product.images[0]
+        image: product.images[0],
+        customizations: item.customizations || [],
+        customizationRequest: item.customizationRequest || null
       });
 
       totalAmount += product.price * item.quantity;
@@ -102,7 +104,7 @@ export const getOrder = async (req, res, next) => {
 
     // Check permissions (admin or order owner)
     if (order.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
-       return next(new ErrorResponse('Not authorized to view this order', 403));
+      return next(new ErrorResponse('Not authorized to view this order', 403));
     }
 
     sendSuccess(res, 200, 'Order details', order);
@@ -129,22 +131,22 @@ export const getMyOrders = async (req, res, next) => {
 export const getOrders = async (req, res, next) => {
   try {
     let query = {};
-    
+
     // If artisan, filter orders containing their products?
     // This is complex as an order can have multiple artisans' products.
     // For MVP, allow Admin to see all.
     // Enhanced: allow Artisan to see order ITEMS related to them.
     // For now, simpler implementation: Admin sees all.
-    
+
     if (req.user.role === 'artisan') {
-       // Find orders where 'products.product' refers to a product owned by this artisan.
-       // This requires aggregation or finding products first.
-       const myProducts = await Product.find({ artisan: req.user.id }).select('_id');
-       const myProductIds = myProducts.map(p => p._id);
-       
-       query = { 'products.product': { $in: myProductIds } };
+      // Find orders where 'products.product' refers to a product owned by this artisan.
+      // This requires aggregation or finding products first.
+      const myProducts = await Product.find({ artisan: req.user.id }).select('_id');
+      const myProductIds = myProducts.map(p => p._id);
+
+      query = { 'products.product': { $in: myProductIds } };
     } else if (req.user.role !== 'admin') {
-       return next(new ErrorResponse('Not authorized', 403));
+      return next(new ErrorResponse('Not authorized', 403));
     }
 
     const orders = await orderService.getAllOrders(query);
@@ -164,7 +166,7 @@ export const updateOrderStatus = async (req, res, next) => {
     if (!order) {
       return next(new ErrorResponse('Order not found', 404));
     }
-    
+
     const status = req.body.status || order.status;
     const deliveredAt = req.body.status === 'Delivered' ? Date.now() : undefined;
 

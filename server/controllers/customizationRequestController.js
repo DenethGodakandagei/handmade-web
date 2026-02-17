@@ -7,7 +7,7 @@ import Product from '../models/ProductModel.js';
 // @access    Private (Buyer)
 export const createCustomizationRequest = async (req, res, next) => {
   try {
-    const { product, size, color, customMessage } = req.body;
+    const { product, customizations, customMessage } = req.body;
 
     const targetProduct = await Product.findById(product);
     if (!targetProduct) {
@@ -18,10 +18,9 @@ export const createCustomizationRequest = async (req, res, next) => {
       buyer: req.user.id,
       artisan: targetProduct.artisan,
       product,
-      size,
-      color,
-      customMessage,
-      designImage: req.file ? `/uploads/${req.file.filename}` : null
+      customizations: typeof customizations === 'string' ? JSON.parse(customizations) : customizations,
+      notes: customMessage,
+      designImage: req.file ? req.file.path : null
     };
 
     const customizationRequest = await customizationService.createRequest(requestData);

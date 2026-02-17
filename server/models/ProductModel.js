@@ -47,8 +47,8 @@ const ProductSchema = new mongoose.Schema({
     district: { type: String, required: true },
     area: { type: String, required: true },
     coordinates: {
-       lat: Number,
-       lng: Number
+      lat: Number,
+      lng: Number
     }
   },
   averageRating: {
@@ -59,7 +59,23 @@ const ProductSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  customizationOptions: [{
+    name: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      enum: ['text', 'select', 'color', 'file'],
+      default: 'text'
+    },
+    options: [String], // Array of available choices for 'select' or 'color'
+    required: {
+      type: Boolean,
+      default: false
+    }
+  }]
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

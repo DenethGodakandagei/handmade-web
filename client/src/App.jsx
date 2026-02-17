@@ -18,6 +18,7 @@ import Settings from './pages/dashboard/Settings';
 import Storefront from './pages/dashboard/Storefront';
 import Messages from './pages/dashboard/Messages';
 import Customizations from './pages/dashboard/Customizations';
+import AddProduct from './pages/dashboard/AddProduct';
 import MainLayout from './components/MainLayout';
 import AdminDashboard from './pages/AdminDashboard';
 import Checkout from './pages/Checkout';
@@ -38,73 +39,74 @@ function App() {
 
   return (
     <div className="flex flex-col min-h-screen relative font-sans antialiased text-gray-900 selection:bg-primary/20 selection:text-primary">
-        <Routes>
-          {/* Main Public Layout */}
-          <Route element={<MainLayout />}>
-             <Route path="/" element={<Home />} />
-             <Route path="/artisans" element={<Artisans />} />
-             <Route path="/artisans/apply" element={<ArtisanApplication />} />
-             <Route path="/collection" element={<ProductList />} />
-             <Route path="/collection/:id" element={<ProductDetails />} />
-             <Route path="/contact" element={<Contact />} />
-             <Route path="/support" element={<Support />} />
-              {/* Orders route removed as per request */}
-              <Route 
-                path="/checkout" 
-                element={
-                  <ProtectedRoute>
-                    <Checkout />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/order-success" 
-                element={
-                  <ProtectedRoute>
-                    <OrderSuccess />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/order-cancel" 
-                element={
-                  <ProtectedRoute>
-                    <OrderCancel />
-                  </ProtectedRoute>
-                } 
-              />
-          </Route>
-
-          {/* Dashboard Layouts */}
-          <Route 
-            path="/dashboard" 
+      <Routes>
+        {/* Main Public Layout */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/artisans" element={<Artisans />} />
+          <Route path="/artisans/apply" element={<ArtisanApplication />} />
+          <Route path="/collection" element={<ProductList />} />
+          <Route path="/collection/:id" element={<ProductDetails />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/support" element={<Support />} />
+          {/* Orders route removed as per request */}
+          <Route
+            path="/checkout"
             element={
-              <ProtectedSellerRoute>
-                 <DashboardLayout />
-              </ProtectedSellerRoute>
-            } 
-          >
-             <Route index element={<Overview />} />
-             <Route path="products" element={<Products />} />
-             <Route path="orders" element={<Orders />} />
-             <Route path="customizations" element={<Customizations />} />
-             <Route path="settings" element={<Settings />} />
-             <Route path="storefront" element={<Storefront />} />
-             <Route path="messages" element={<Messages />} />
-          </Route>
-
-           <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard />
+              <ProtectedRoute>
+                <Checkout />
               </ProtectedRoute>
-            } 
+            }
           />
-          
-          {/* Redirects */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+          <Route
+            path="/order-success"
+            element={
+              <ProtectedRoute>
+                <OrderSuccess />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/order-cancel"
+            element={
+              <ProtectedRoute>
+                <OrderCancel />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        {/* Dashboard Layouts */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedSellerRoute>
+              <DashboardLayout />
+            </ProtectedSellerRoute>
+          }
+        >
+          <Route index element={<Overview />} />
+          <Route path="products" element={<Products />} />
+          <Route path="products/add" element={<AddProduct />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="customizations" element={<Customizations />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="storefront" element={<Storefront />} />
+          <Route path="messages" element={<Messages />} />
+        </Route>
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Redirects */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
       <Toaster position="bottom-right" expand={false} richColors />
     </div>
   );

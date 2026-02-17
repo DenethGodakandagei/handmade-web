@@ -16,17 +16,19 @@ const CustomizationRequestSchema = new mongoose.Schema({
     ref: 'Product',
     required: true
   },
-  size: {
+  customizations: [{
+    optionName: {
+      type: String,
+      required: true
+    },
+    selectedValue: {
+      type: String,
+      required: true
+    }
+  }],
+  notes: {
     type: String,
-    required: [true, 'Please specify size']
-  },
-  color: {
-    type: String,
-    required: [true, 'Please specify color']
-  },
-  customMessage: {
-    type: String,
-    maxlength: [500, 'Message cannot be more than 500 characters']
+    maxlength: [500, 'Notes cannot be more than 500 characters']
   },
   designImage: {
     type: String,
