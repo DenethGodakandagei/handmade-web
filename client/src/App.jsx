@@ -88,6 +88,7 @@ function App() {
           <Route index element={<Overview />} />
           <Route path="products" element={<Products />} />
           <Route path="products/add" element={<AddProduct />} />
+          <Route path="products/edit/:id" element={<AddProduct />} />
           <Route path="orders" element={<Orders />} />
           <Route path="customizations" element={<Customizations />} />
           <Route path="settings" element={<Settings />} />

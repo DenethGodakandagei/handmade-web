@@ -1,4 +1,4 @@
-import { ErrorResponse, sendSuccess } from '../utils/responseUtils.js';
+import { ErrorResponse } from '../utils/responseUtils.js';
 import * as productService from '../services/productService.js';
 import path from 'path';
 import fs from 'fs';
@@ -36,7 +36,7 @@ export const getProduct = async (req, res, next) => {
       );
     }
 
-    sendSuccess(res, 200, 'Product details', product);
+    ResponseHandler.success(res, 200, 'Product details', product);
   } catch (err) {
     next(err);
   }
@@ -68,11 +68,31 @@ export const createProduct = async (req, res, next) => {
       if (req.files.video) {
         req.body.video = req.files.video[0].path;
       }
+      if (req.files.video) {
+        req.body.video = req.files.video[0].path;
+      }
+    }
+
+    // Parse JSON fields from FormData
+    if (typeof req.body.location === 'string') {
+      try {
+        req.body.location = JSON.parse(req.body.location);
+      } catch (e) {
+        return next(new ErrorResponse('Invalid location format', 400));
+      }
+    }
+
+    if (typeof req.body.customizationOptions === 'string') {
+      try {
+        req.body.customizationOptions = JSON.parse(req.body.customizationOptions);
+      } catch (e) {
+        return next(new ErrorResponse('Invalid customization options format', 400));
+      }
     }
 
     const product = await productService.createProduct(req.body);
 
-    sendSuccess(res, 201, 'Product created', product);
+    ResponseHandler.success(res, 201, 'Product created', product);
   } catch (err) {
     next(err);
   }
@@ -91,7 +111,7 @@ export const updateProduct = async (req, res, next) => {
       );
     }
 
-    // specific ownership check (Mongoose populate returns object, so check _id)
+    // specific ownership check
     const artisanId = product.artisan._id ? product.artisan._id.toString() : product.artisan.toString();
     if (artisanId !== req.user.id && req.user.role !== 'admin') {
       return next(
@@ -110,11 +130,31 @@ export const updateProduct = async (req, res, next) => {
       if (req.files.video) {
         req.body.video = req.files.video[0].path;
       }
+      if (req.files.video) {
+        req.body.video = req.files.video[0].path;
+      }
+    }
+
+    // Parse JSON fields from FormData
+    if (typeof req.body.location === 'string') {
+      try {
+        req.body.location = JSON.parse(req.body.location);
+      } catch (e) {
+        return next(new ErrorResponse('Invalid location format', 400));
+      }
+    }
+
+    if (typeof req.body.customizationOptions === 'string') {
+      try {
+        req.body.customizationOptions = JSON.parse(req.body.customizationOptions);
+      } catch (e) {
+        return next(new ErrorResponse('Invalid customization options format', 400));
+      }
     }
 
     product = await productService.updateProduct(req.params.id, req.body);
 
-    sendSuccess(res, 200, 'Product updated', product);
+    ResponseHandler.success(res, 200, 'Product updated', product);
   } catch (err) {
     next(err);
   }
@@ -144,9 +184,9 @@ export const deleteProduct = async (req, res, next) => {
       );
     }
 
-    await product.deleteOne();
+    await productService.deleteProduct(req.params.id);
 
-    sendSuccess(res, 200, 'Product deleted', {});
+    ResponseHandler.success(res, 200, 'Product deleted', {});
   } catch (err) {
     next(err);
   }
