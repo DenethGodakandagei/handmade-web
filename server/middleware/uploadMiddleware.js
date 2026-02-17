@@ -3,17 +3,10 @@ import path from 'path';
 import { ErrorResponse } from '../utils/responseUtils.js';
 
 // Set storage engine
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'server/uploads/');
-  },
-  filename: function(req, file, cb) {
-    cb(
-      null,
-      file.fieldname + '-' + Date.now() + path.extname(file.originalname)
-    );
-  }
-});
+import { storage } from '../config/cloudinary.js';
+
+// Use Cloudinary storage
+// const storage = ... (replaced by import)
 
 // Check file type
 function checkFileType(file, cb) {
@@ -35,7 +28,7 @@ function checkFileType(file, cb) {
 const upload = multer({
   storage: storage,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit (for videos)
-  fileFilter: function(req, file, cb) {
+  fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   }
 });

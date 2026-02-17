@@ -19,7 +19,15 @@ const OrderSchema = new mongoose.Schema({
         required: true,
         min: 1
       },
-      price: Number // store price at time of purchase
+      price: Number, // store price at time of purchase
+      customizationRequest: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'CustomizationRequest'
+      },
+      customizations: [{
+        optionName: String,
+        selectedValue: String
+      }]
     }
   ],
   totalAmount: {

@@ -18,4 +18,4 @@ export const flush = () => {
   return cache.flushAll();
 };
 
-export default cache;
+// export default cache;

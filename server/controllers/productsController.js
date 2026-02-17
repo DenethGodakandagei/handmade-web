@@ -3,22 +3,23 @@ import * as productService from '../services/productService.js';
 import path from 'path';
 import fs from 'fs';
 import ResponseHandler from '../utils/ResponseHandler.js';
-import { set } from '../utils/cacheService.js';
+import { set as setCache } from '../utils/cacheService.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
 // @desc      Get all products
 // @route     GET /api/v1/products
 // @access    Public
 export const getProducts = asyncHandler(async (req, res, next) => {
-  const products = await productService.getAllProducts(req.query);
+  const { products, pagination, count } = await productService.getAllProducts(req.query);
 
   if (req.cacheKey) {
-    set(req.cacheKey, products, 60);
+    setCache(req.cacheKey, products, 60);
   }
 
   ResponseHandler.success(res, 200, 'Products fetched successfully', {
-    items: products,
-    count: products.length
+    products,
+    pagination,
+    count
   });
 });
 
@@ -58,14 +59,14 @@ export const createProduct = async (req, res, next) => {
         )
       );
     }
-    
+
     // Handle file uploads if present
     if (req.files) {
       if (req.files.images) {
-         req.body.images = req.files.images.map(file => `/uploads/${file.filename}`);
+        req.body.images = req.files.images.map(file => file.path);
       }
       if (req.files.video) {
-         req.body.video = `/uploads/${req.files.video[0].filename}`;
+        req.body.video = req.files.video[0].path;
       }
     }
 
@@ -103,12 +104,12 @@ export const updateProduct = async (req, res, next) => {
 
     // Handle file updates similar to create
     if (req.files) {
-         if (req.files.images) {
-            req.body.images = req.files.images.map(file => `/uploads/${file.filename}`);
-         }
-         if (req.files.video) {
-            req.body.video = `/uploads/${req.files.video[0].filename}`;
-         }
+      if (req.files.images) {
+        req.body.images = req.files.images.map(file => file.path);
+      }
+      if (req.files.video) {
+        req.body.video = req.files.video[0].path;
+      }
     }
 
     product = await productService.updateProduct(req.params.id, req.body);
