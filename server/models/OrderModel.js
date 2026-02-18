@@ -27,7 +27,9 @@ const OrderSchema = new mongoose.Schema({
       customizations: [{
         optionName: String,
         selectedValue: String
-      }]
+      }],
+      notes: String,
+      designImage: String
     }
   ],
   totalAmount: {

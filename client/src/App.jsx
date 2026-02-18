@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ProductList from './pages/ProductList';
 import ProductDetails from './pages/ProductDetails';
+import RequestCustomization from './pages/RequestCustomization';
 import ProtectedSellerRoute from './components/ProtectedSellerRoute';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import Overview from './pages/dashboard/Overview';
@@ -21,6 +22,7 @@ import Customizations from './pages/dashboard/Customizations';
 import AddProduct from './pages/dashboard/AddProduct';
 import MainLayout from './components/MainLayout';
 import AdminDashboard from './pages/AdminDashboard';
+import UserDashboard from './pages/UserDashboard';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
 import OrderSuccess from './pages/OrderSuccess';
@@ -71,6 +73,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <OrderCancel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customizations/new/:id"
+            element={
+              <ProtectedRoute>
+                <RequestCustomization />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
               </ProtectedRoute>
             }
           />

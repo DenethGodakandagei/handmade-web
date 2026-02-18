@@ -14,7 +14,7 @@ router.use(protect);
 
 router
   .route('/')
-  .post(authorize('buyer'), upload.single('designImage'), createCustomizationRequest)
+  .post(authorize('buyer', 'artisan', 'admin'), upload.single('designImage'), createCustomizationRequest)
   .get(getMyCustomizationRequests);
 
 router
