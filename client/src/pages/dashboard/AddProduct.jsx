@@ -346,10 +346,10 @@ const AddProduct = () => {
                     </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <Button variant="outline" onClick={() => navigate(-1)} className="border-gray-200 text-gray-500 hover:text-black">
+                    <Button variant="outline" onClick={() => navigate(-1)} className="border-gray-200 text-gray-500 hover:text-black hover:bg-gray-50 px-6 py-3 text-xs uppercase tracking-widest font-bold transition-colors rounded-none">
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="bg-black text-white hover:bg-gray-800 btn-premium min-w-[140px]">
+                    <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="bg-black text-white hover:bg-gray-800 min-w-[140px] px-6 py-3 text-xs uppercase tracking-widest font-bold transition-colors rounded-none">
                         {isSubmitting ? <Loader2 className="animate-spin mr-2" size={16} /> : <Save className="mr-2" size={16} />}
                         {isEditMode ? 'Update' : 'Publish'}
                     </Button>
