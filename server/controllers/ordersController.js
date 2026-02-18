@@ -67,7 +67,9 @@ export const createOrder = async (req, res, next) => {
         price: product.price,
         image: product.images[0],
         customizations: item.customizations || [],
-        customizationRequest: item.customizationRequest || null
+        customizationRequest: item.customizationRequest || null,
+        notes: item.notes || '',
+        designImage: item.designImage || null
       });
 
       totalAmount += product.price * item.quantity;
