@@ -122,7 +122,7 @@ const Products = () => {
                 </div>
                 <Button
                     onClick={() => navigate('/dashboard/products/add')}
-                    className="bg-black text-white hover:bg-gray-800 rounded-full px-6 btn-premium"
+                    className="bg-black text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition-colors rounded-none"
                 >
                     <Plus size={16} className="mr-2" />
                     New Creation
