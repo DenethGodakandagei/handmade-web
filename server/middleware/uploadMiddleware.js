@@ -11,7 +11,8 @@ import { storage } from '../config/cloudinary.js';
 // Check file type
 function checkFileType(file, cb) {
   // Allowed ext
-  const filetypes = /jpeg|jpg|png|gif|mp4|mov|avi|wmv/;
+  // Allowed ext
+  const filetypes = /jpeg|jpg|png|gif|webp|mp4|mov|avi|wmv|quicktime/;
   // Check ext
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   // Check mime

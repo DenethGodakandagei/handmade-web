@@ -86,3 +86,12 @@ export const updateProduct = async (id, productData) => {
     runValidators: true
   });
 }
+
+export const deleteProduct = async (id) => {
+  const product = await Product.findById(id);
+  if (!product) {
+    throw new Error('Product not found');
+  }
+  await product.deleteOne();
+  return product;
+}

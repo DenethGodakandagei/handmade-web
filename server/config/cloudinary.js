@@ -15,7 +15,7 @@ const storage = new CloudinaryStorage({
     params: {
         folder: 'handmade',
         resource_type: 'auto', // Allow images and videos
-        allowed_formats: ['jpg', 'png', 'jpeg', 'mp4', 'mov']
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'mp4', 'mov', 'avi']
     },
 });
 
