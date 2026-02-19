@@ -21,6 +21,6 @@ router.route('/myorders').get(getMyOrders);
 
 router.route('/:id').get(getOrder);
 
-router.route('/:id/status').put(authorize('admin'), updateOrderStatus);
+router.route('/:id/status').put(authorize('admin', 'artisan'), updateOrderStatus);
 
 export default router;
