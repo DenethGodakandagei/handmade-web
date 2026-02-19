@@ -27,6 +27,7 @@ import orders from './routes/ordersRoute.js';
 import contact from './routes/contactRoute.js';
 import customizations from './routes/customizationRequestRoute.js';
 import payment from './routes/paymentRoute.js';
+import messageRoutes from './routes/messageRoute.js'
 
 import requestLogger from './middleware/requestLogger.js';
 import logger from './config/logger.js';
@@ -81,6 +82,7 @@ app.use('/api/v1/orders', orders);
 app.use('/api/v1/contact', contact);
 app.use('/api/v1/customizations', customizations);
 app.use('/api/v1/payment', payment);
+app.use('/api/v1/messages', messageRoutes);
 
 
 

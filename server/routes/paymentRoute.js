@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 /**
  * POST /api/v1/payment/create-payment-intent
@@ -12,6 +12,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
  */
 router.post('/create-payment-intent', protect, async (req, res) => {
     try {
+        if (!stripe) {
+            return res.status(503).json({ success: false, message: 'Stripe not configured on server.' });
+        }
         const { amount, currency = 'usd' } = req.body;
 
         if (!amount || amount <= 0) {
