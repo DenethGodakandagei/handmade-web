@@ -94,7 +94,19 @@ function App() {
           />
         </Route>
 
-        {/* Dashboard Layouts */}
+        {/* /dashboard/orders — accessible to ALL logged-in users (buyers + sellers) */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="orders" element={<Orders />} />
+        </Route>
+
+        {/* Full Dashboard — sellers/artisans only */}
         <Route
           path="/dashboard"
           element={
@@ -107,7 +119,6 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="products/add" element={<AddProduct />} />
           <Route path="products/edit/:id" element={<AddProduct />} />
-          <Route path="orders" element={<Orders />} />
           <Route path="customizations" element={<Customizations />} />
           <Route path="settings" element={<Settings />} />
           <Route path="storefront" element={<Storefront />} />
