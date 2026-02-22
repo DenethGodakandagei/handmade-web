@@ -50,6 +50,9 @@ export const createOrder = async (req, res, next) => {
       // Check stock
       if (product.stock < item.quantity) {
         if (product.isPreOrder) {
+          if (req.preordersAllowed === false) {
+            return next(new ErrorResponse(`Pre-orders are currently disabled by the platform administrator. Product "${product.name}" is out of stock.`, 403));
+          }
           isPreOrderOrder = true;
         } else {
           return next(new ErrorResponse(`Product ${product.name} is out of stock`, 400));
