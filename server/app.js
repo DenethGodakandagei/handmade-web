@@ -30,7 +30,7 @@ import system from './routes/systemRoutes.js';
 import admin from './routes/adminRoutes.js';
 import securityOps from './routes/securityOpsRoutes.js';
 import adminExtended from './routes/adminExtendedRoutes.js';
-
+import announcements from './routes/announcementRoutes.js';
 import payment from './routes/paymentRoute.js';
 import messageRoutes from './routes/messageRoute.js'
 

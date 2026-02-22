@@ -48,6 +48,5 @@ const ActiveSessionSchema = new mongoose.Schema({
 });
 
 ActiveSessionSchema.index({ user: 1 });
-ActiveSessionSchema.index({ tokenHash: 1 });
 
 export default mongoose.model('ActiveSession', ActiveSessionSchema);
