@@ -16,6 +16,7 @@ import { protect } from '../middleware/authMiddleware.js';
 import { validate } from '../middleware/validationMiddleware.js';
 import { registerSchema, loginSchema } from '../validation/authValidation.js';
 import { becomeSellerSchema } from '../validation/sellerValidation.js';
+import { signupFreezeGate } from '../middleware/platformGates.js';
 
 const router = express.Router();
 
@@ -59,7 +60,7 @@ const router = express.Router();
  *       400:
  *         description: Bad request
  */
-router.post('/register', validate(registerSchema), register);
+router.post('/register', signupFreezeGate, validate(registerSchema), register);
 
 /**
  * @swagger
