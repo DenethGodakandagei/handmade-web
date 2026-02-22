@@ -30,7 +30,10 @@ import system from './routes/systemRoutes.js';
 import admin from './routes/adminRoutes.js';
 import securityOps from './routes/securityOpsRoutes.js';
 import adminExtended from './routes/adminExtendedRoutes.js';
-import announcements from './routes/announcementRoutes.js';
+
+import payment from './routes/paymentRoute.js';
+import messageRoutes from './routes/messageRoute.js'
+
 
 import requestLogger from './middleware/requestLogger.js';
 import logger from './config/logger.js';
@@ -91,11 +94,14 @@ app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/orders', orders);
 app.use('/api/v1/contact', contact);
 app.use('/api/v1/customizations', customizations);
+
 app.use('/api/v1/system', system);
 app.use('/api/v1/admin', admin);
 app.use('/api/v1/admin/security', securityOps);
 app.use('/api/v1/admin/ext', adminExtended);
 app.use('/api/v1/announcements', announcements);
+app.use('/api/v1/payment', payment);
+app.use('/api/v1/messages', messageRoutes);
 
 
 
