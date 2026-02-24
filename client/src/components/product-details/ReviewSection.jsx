@@ -34,8 +34,10 @@ const StarRating = ({ rating, onRate, size = 20, interactive = false }) => {
     );
 };
 
-const ReviewCard = ({ review, currentUserId, onEdit, onDelete }) => {
+const ReviewCard = ({ review, currentUserId, onEdit, onDelete, onReply }) => {
     const isOwner = currentUserId === review.user?._id;
+    const isArtisan = currentUserId && review.product && review.product.artisan === currentUserId;
+    const canModify = isOwner || isArtisan;
     const date = new Date(review.createdAt);
     const timeAgo = getTimeAgo(date);
 
@@ -66,8 +68,17 @@ const ReviewCard = ({ review, currentUserId, onEdit, onDelete }) => {
                             </span>
                         </div>
 
-                        {isOwner && (
+                        {canModify && (
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {isArtisan && (
+                                    <button
+                                        onClick={() => onReply(review)}
+                                        className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                                        title="Reply to review"
+                                    >
+                                        <MessageSquare size={13} />
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => onEdit(review)}
                                     className="p-2 text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all"
@@ -94,6 +105,19 @@ const ReviewCard = ({ review, currentUserId, onEdit, onDelete }) => {
 
                     {/* Text */}
                     <p className="text-[13px] text-gray-500 leading-relaxed font-light">{review.text}</p>
+
+                    {/* Artisan Reply */}
+                    {review.artisanReply && (
+                        <div className="mt-4 pl-4 border-l-2 border-gray-200 bg-gray-50/50 p-4 rounded-r-xl">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Seller Reply</span>
+                                {review.repliedAt && (
+                                    <span className="text-[9px] text-gray-400">{getTimeAgo(new Date(review.repliedAt))}</span>
+                                )}
+                            </div>
+                            <p className="text-[13px] text-gray-600 leading-relaxed font-light">{review.artisanReply}</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </motion.div>
@@ -125,6 +149,7 @@ const ReviewSection = ({ productId, averageRating }) => {
     const [showAll, setShowAll] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [editingReview, setEditingReview] = useState(null);
+    const [replyingTo, setReplyingTo] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
     // Form State
@@ -132,6 +157,7 @@ const ReviewSection = ({ productId, averageRating }) => {
         title: '',
         text: '',
         rating: 0,
+        artisanReply: '',
     });
 
     useEffect(() => {
@@ -151,17 +177,32 @@ const ReviewSection = ({ productId, averageRating }) => {
     };
 
     const resetForm = () => {
-        setFormData({ title: '', text: '', rating: 0 });
+        setFormData({ title: '', text: '', rating: 0, artisanReply: '' });
         setEditingReview(null);
+        setReplyingTo(null);
         setShowForm(false);
     };
 
     const handleEdit = (review) => {
         setEditingReview(review);
+        setReplyingTo(null);
         setFormData({
             title: review.title,
             text: review.text,
             rating: review.rating,
+            artisanReply: review.artisanReply || '',
+        });
+        setShowForm(true);
+    };
+
+    const handleReply = (review) => {
+        setReplyingTo(review);
+        setEditingReview(null);
+        setFormData({
+            title: '',
+            text: '',
+            rating: 0,
+            artisanReply: review.artisanReply || '',
         });
         setShowForm(true);
     };
@@ -179,18 +220,29 @@ const ReviewSection = ({ productId, averageRating }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.rating === 0) {
-            toast.error('Please select a rating');
-            return;
-        }
-        if (!formData.title.trim() || !formData.text.trim()) {
-            toast.error('Please fill in all fields');
-            return;
+
+        if (replyingTo) {
+            if (!formData.artisanReply.trim()) {
+                toast.error('Please enter a reply message');
+                return;
+            }
+        } else {
+            if (formData.rating === 0) {
+                toast.error('Please select a rating');
+                return;
+            }
+            if (!formData.title.trim() || !formData.text.trim()) {
+                toast.error('Please fill in all fields');
+                return;
+            }
         }
 
         setSubmitting(true);
         try {
-            if (editingReview) {
+            if (replyingTo) {
+                await reviewService.reply(replyingTo._id, { artisanReply: formData.artisanReply });
+                toast.success('Reply submitted successfully');
+            } else if (editingReview) {
                 await reviewService.update(editingReview._id, formData);
                 toast.success('Review updated successfully');
             } else {
@@ -315,7 +367,7 @@ const ReviewSection = ({ productId, averageRating }) => {
                                 >
                                     <div className="flex items-center justify-between mb-6">
                                         <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
-                                            {editingReview ? 'Edit Review' : 'Share Your Experience'}
+                                            {replyingTo ? 'Reply to Review' : editingReview ? 'Edit Review' : 'Share Your Experience'}
                                         </h4>
                                         <button
                                             type="button"
@@ -326,49 +378,73 @@ const ReviewSection = ({ productId, averageRating }) => {
                                         </button>
                                     </div>
 
-                                    {/* Rating Selection */}
-                                    <div className="mb-6">
-                                        <label className="block text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">
-                                            Your Rating
-                                        </label>
-                                        <StarRating
-                                            rating={formData.rating}
-                                            onRate={(val) => setFormData({ ...formData, rating: val })}
-                                            size={28}
-                                            interactive
-                                        />
-                                    </div>
+                                    {!replyingTo && (
+                                        <>
+                                            {/* Rating Selection */}
+                                            <div className="mb-6">
+                                                <label className="block text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-3">
+                                                    Your Rating
+                                                </label>
+                                                <StarRating
+                                                    rating={formData.rating}
+                                                    onRate={(val) => setFormData({ ...formData, rating: val })}
+                                                    size={28}
+                                                    interactive
+                                                />
+                                            </div>
 
-                                    {/* Title */}
-                                    <div className="mb-5">
-                                        <label className="block text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">
-                                            Review Title
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            placeholder="Summarize your experience..."
-                                            maxLength={100}
-                                            className="w-full bg-gray-50/80 border border-gray-100 px-5 py-3.5 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all placeholder:text-gray-300"
-                                        />
-                                    </div>
+                                            {/* Title */}
+                                            <div className="mb-5">
+                                                <label className="block text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">
+                                                    Review Title
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.title}
+                                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                    placeholder="Summarize your experience..."
+                                                    maxLength={100}
+                                                    className="w-full bg-gray-50/80 border border-gray-100 px-5 py-3.5 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all placeholder:text-gray-300"
+                                                />
+                                            </div>
 
-                                    {/* Text */}
-                                    <div className="mb-6">
-                                        <label className="block text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">
-                                            Your Review
-                                        </label>
-                                        <textarea
-                                            rows={4}
-                                            value={formData.text}
-                                            onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-                                            placeholder="Tell us what you think about this product..."
-                                            maxLength={500}
-                                            className="w-full bg-gray-50/80 border border-gray-100 px-5 py-3.5 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all resize-none placeholder:text-gray-300"
-                                        />
-                                        <p className="text-[10px] text-gray-300 text-right mt-1">{formData.text.length}/500</p>
-                                    </div>
+                                            {/* Text */}
+                                            <div className="mb-6">
+                                                <label className="block text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">
+                                                    Your Review
+                                                </label>
+                                                <textarea
+                                                    rows={4}
+                                                    value={formData.text}
+                                                    onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+                                                    placeholder="Tell us what you think about this product..."
+                                                    maxLength={500}
+                                                    className="w-full bg-gray-50/80 border border-gray-100 px-5 py-3.5 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all resize-none placeholder:text-gray-300"
+                                                />
+                                                <p className="text-[10px] text-gray-300 text-right mt-1">{formData.text.length}/500</p>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {replyingTo && (
+                                        <div className="mb-6">
+                                            <div className="p-4 bg-gray-50 rounded-xl mb-4">
+                                                <p className="text-xs font-semibold text-gray-800 mb-1">Replying to {replyingTo.user?.name}</p>
+                                                <p className="text-[12px] text-gray-500 italic">"{replyingTo.text}"</p>
+                                            </div>
+                                            <label className="block text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">
+                                                Your Reply
+                                            </label>
+                                            <textarea
+                                                rows={4}
+                                                value={formData.artisanReply}
+                                                onChange={(e) => setFormData({ ...formData, artisanReply: e.target.value })}
+                                                placeholder="Write your response here..."
+                                                maxLength={500}
+                                                className="w-full bg-gray-50/80 border border-gray-100 px-5 py-3.5 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-transparent transition-all resize-none placeholder:text-gray-300"
+                                            />
+                                        </div>
+                                    )}
 
                                     {/* Submit */}
                                     <div className="flex justify-end gap-3">
@@ -390,7 +466,7 @@ const ReviewSection = ({ productId, averageRating }) => {
                                             ) : (
                                                 <>
                                                     <Send size={12} className="mr-2" />
-                                                    {editingReview ? 'Update' : 'Submit'}
+                                                    {replyingTo ? 'Send Reply' : editingReview ? 'Update' : 'Submit'}
                                                 </>
                                             )}
                                         </Button>
@@ -430,6 +506,7 @@ const ReviewSection = ({ productId, averageRating }) => {
                                         currentUserId={user?._id}
                                         onEdit={handleEdit}
                                         onDelete={handleDelete}
+                                        onReply={handleReply}
                                     />
                                 ))}
                             </AnimatePresence>

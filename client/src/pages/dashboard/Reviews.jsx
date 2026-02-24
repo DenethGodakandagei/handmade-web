@@ -217,8 +217,11 @@ const Reviews = () => {
             label: 'Actions',
             render: (_, row) => (
                 <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-500" onClick={() => navigate(`/product/${row.product?._id || row.product}`)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-500" onClick={() => navigate(`/product/${row.product?._id || row.product}#reviews`)}>
                         <Eye size={14} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500" onClick={() => handleDelete(row)}>
+                        <Trash2 size={14} />
                     </Button>
                 </div>
             )
@@ -378,11 +381,11 @@ const Reviews = () => {
                                             {/* Action Buttons */}
                                             <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
                                                 <Button
-                                                    onClick={() => navigate(`/product/${product._id}`)}
+                                                    onClick={() => navigate(`/product/${product._id}#reviews`)}
                                                     className="flex-1 bg-black text-white hover:bg-gray-800 text-[9px] uppercase tracking-widest font-bold h-9 rounded-lg"
                                                 >
                                                     <Eye size={12} className="mr-1.5" />
-                                                    View Product
+                                                    View
                                                 </Button>
                                             </div>
                                         </div>
@@ -442,6 +445,7 @@ const Reviews = () => {
                                 columns={reviewColumns}
                                 data={filteredReviews}
                                 isLoading={isLoading}
+                                hideSearch
                             />
                         </div>
                     ) : (

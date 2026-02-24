@@ -76,8 +76,10 @@ export const updateReview = async (req, res, next) => {
       );
     }
 
-    // Make sure review belongs to user or user is admin
-    if (review.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
+    const product = await Product.findById(review.product._id);
+
+    // Make sure review belongs to user, user is admin, or user is the product artisan
+    if (review.user._id.toString() !== req.user.id && req.user.role !== 'admin' && product.artisan.toString() !== req.user.id) {
       return next(new ErrorResponse(`Not authorized to update review`, 401));
     }
 
@@ -102,8 +104,10 @@ export const deleteReview = async (req, res, next) => {
       );
     }
 
-    // Make sure review belongs to user or user is admin
-    if (review.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
+    const product = await Product.findById(review.product._id);
+
+    // Make sure review belongs to user, user is admin, or user is the product artisan
+    if (review.user._id.toString() !== req.user.id && req.user.role !== 'admin' && product.artisan.toString() !== req.user.id) {
       return next(new ErrorResponse(`Not authorized to delete review`, 401));
     }
 

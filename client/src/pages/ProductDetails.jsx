@@ -186,7 +186,7 @@ const ProductDetails = () => {
       <MarqueeBanner />
 
       {/* Related Products (Container Internal) */}
-      <RelatedProducts />
+      <RelatedProducts productId={product._id} categoryId={product.category?._id || product.category} />
 
     </div>
   );
