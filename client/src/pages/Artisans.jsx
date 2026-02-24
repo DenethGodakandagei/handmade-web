@@ -1,71 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, ArrowUpRight } from 'lucide-react';
+import { Search, MapPin, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '@/store/authStore';
 import { Button } from '@/components/ui/button';
-
-const ARTISANS = [
-  {
-    id: 1,
-    name: 'Elias Thorne',
-    craft: 'Blacksmithing',
-    location: 'Oslo, Norway',
-    bio: 'Forging modern heirlooms from reclaimed Nordic steel. A study in permanence and utility.',
-    image: '/images/artisan-1.png',
-    tags: ['Metal', 'Heritage', 'Tools']
-  },
-  {
-    id: 2,
-    name: 'Elena Rossi',
-    craft: 'Ceramics',
-    location: 'Florence, Italy',
-    bio: 'Hand-thrown stoneware focusing on organic forms and natural glazes inspired by the Tuscan landscape.',
-    image: '/images/artisan-2.png',
-    tags: ['Clay', 'Tableware', 'Organic']
-  },
-  {
-    id: 3,
-    name: 'Kenji Sato',
-    craft: 'Woodworking',
-    location: 'Kyoto, Japan',
-    bio: 'Preserving traditional joinery techniques in contemporary furniture design.',
-    image: '/images/artisan-3.png',
-    tags: ['Wood', 'Furniture', 'Minimalism']
-  },
-  {
-    id: 4,
-    name: 'Sarah Chen',
-    craft: 'Textile Art',
-    location: 'Vancouver, Canada',
-    bio: 'Weaving narratives through hand-dyed natural fibers and ancient loom patterns.',
-    image: '/images/artisan-4.png',
-    tags: ['Fiber', 'Weaving', 'Art']
-  }
-];
+import userService from '@/api/services/userService';
+import Spinner from '@/components/ui/Spinner';
 
 const Artisans = () => {
   const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [artisans, setArtisans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [failedImages, setFailedImages] = useState({});
+
+  useEffect(() => {
+    const fetchArtisans = async () => {
+      try {
+        const response = await userService.getArtisans();
+        setArtisans(response.data.data || response.data);
+      } catch (error) {
+        console.error('Failed to fetch artisans', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchArtisans();
+  }, []);
 
   const handleApply = () => {
     if (isAuthenticated) {
       navigate('/artisans/apply');
     } else {
       openAuthModal('login');
-      // Ideally pass a callback or state to redirect after login, but for now user will stay on page and can click again.
-      // Or we can assume modal close doesn't redirect.
-      // User flow: Click Join -> Login Modal -> (User logs in) -> Modal closes -> User clicks Join again -> Redirects.
-      // This is acceptable for MVP.
     }
   };
 
-  const filteredArtisans = ARTISANS.filter(artisan => 
-    artisan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    artisan.craft.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    artisan.location.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredArtisans = artisans.filter(artisan => 
+    (artisan.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (artisan.category?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (artisan.location?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen pt-24 pb-20 font-sans text-black">
@@ -106,35 +90,47 @@ const Artisans = () => {
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredArtisans.map((artisan) => (
                <motion.div 
-                  key={artisan.id}
+                  key={artisan._id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5 }}
                   className="group cursor-pointer"
+                  onClick={() => navigate(`/artisans/${artisan._id}`)}
                >
                   <div className="aspect-square bg-gray-50 mb-4 overflow-hidden relative">
-                     <img 
-                        src={artisan.image} 
-                        alt={artisan.name} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 grayscale-[10%] group-hover:grayscale-0"
-                     />
+                     {!artisan.profilePicture || failedImages[artisan._id] ? (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                           <User className="w-16 h-16 text-gray-400" />
+                        </div>
+                     ) : (
+                        <img 
+                           src={artisan.profilePicture} 
+                           alt={artisan.name} 
+                           onError={() =>
+                             setFailedImages((prev) => ({ ...prev, [artisan._id]: true }))
+                           }
+                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 grayscale-[10%] group-hover:grayscale-0"
+                        />
+                     )}
                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
                   </div>
                   
                   <div className="space-y-2">
                      <div className="flex justify-between items-start">
                         <h3 className="font-serif text-xl leading-none">{artisan.name}</h3>
-                        <span className="text-[10px] uppercase tracking-widest border border-gray-200 px-2 py-0.5 rounded-full text-gray-500">{artisan.craft}</span>
+                        {artisan.category && (
+                           <span className="text-[10px] uppercase tracking-widest border border-gray-200 px-2 py-0.5 rounded-full text-gray-500">{artisan.category}</span>
+                        )}
                      </div>
                      
                      <div className="flex items-center text-xs text-gray-400 font-medium uppercase tracking-wider">
                         <MapPin className="w-3 h-3 mr-1" />
-                        {artisan.location}
+                        {artisan.location || 'Global'}
                      </div>
 
                      <p className="text-sm text-gray-500 font-light line-clamp-2 leading-relaxed pt-2">
-                        {artisan.bio}
+                        {artisan.bio || 'Dedication to the craft defined by patience and respect for materials.'}
                      </p>
                   </div>
                </motion.div>

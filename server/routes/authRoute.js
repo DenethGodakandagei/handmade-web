@@ -6,6 +6,7 @@ import {
   forgotPassword,
   resetPassword,
   updateDetails,
+  updateProfilePicture,
   updatePassword,
   logout,
   becomeSeller
@@ -17,6 +18,7 @@ import { validate } from '../middleware/validationMiddleware.js';
 import { registerSchema, loginSchema } from '../validation/authValidation.js';
 import { becomeSellerSchema } from '../validation/sellerValidation.js';
 import { signupFreezeGate } from '../middleware/platformGates.js';
+import upload from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -85,6 +87,7 @@ router.post('/login', validate(loginSchema), login);
 router.get('/logout', logout);
 router.get('/me', protect, getMe);
 router.put('/updatedetails', protect, updateDetails);
+router.put('/updateprofilepicture', protect, upload.single('profilePicture'), updateProfilePicture);
 router.put('/updatepassword', protect, updatePassword);
 router.put('/becomeseller', protect, validate(becomeSellerSchema), becomeSeller);
 router.post('/forgotpassword', forgotPassword);

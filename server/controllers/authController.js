@@ -133,12 +133,40 @@ export const updateDetails = async (req, res, next) => {
   try {
     const fieldsToUpdate = {
       name: req.body.name,
-      email: req.body.email
+      bio: req.body.bio,
+      studioName: req.body.studioName,
+      location: req.body.location,
+      telephone: req.body.telephone,
+      category: req.body.category,
+      skills: req.body.skills,
+      experience: req.body.experience,
+      portfolio: req.body.portfolio
     };
 
     const user = await authService.updateUserDetails(req.user.id, fieldsToUpdate);
 
     sendSuccess(res, 200, 'User details updated', user);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc      Update profile picture
+// @route     PUT /api/v1/auth/updateprofilepicture
+// @access    Private
+export const updateProfilePicture = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return next(new ErrorResponse('Please upload a file', 400));
+    }
+
+    const fieldsToUpdate = {
+      profilePicture: req.file.path
+    };
+
+    const user = await authService.updateUserDetails(req.user.id, fieldsToUpdate);
+
+    sendSuccess(res, 200, 'Profile picture updated', user);
   } catch (err) {
     next(err);
   }

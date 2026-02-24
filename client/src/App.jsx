@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Artisans from './pages/Artisans';
+import ArtisanDetails from './pages/ArtisanDetails';
 import ArtisanApplication from './pages/ArtisanApplication';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -67,6 +68,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/artisans" element={<Artisans />} />
+          <Route path="/artisans/:id" element={<ArtisanDetails />} />
           <Route path="/artisans/apply" element={<ArtisanApplication />} />
           <Route path="/collection" element={<ProductList />} />
           <Route path="/collection/:id" element={<ProductDetails />} />

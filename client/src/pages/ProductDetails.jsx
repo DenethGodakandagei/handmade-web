@@ -107,14 +107,16 @@ const ProductDetails = () => {
   );
 
   // Derived Data
-  const artisan = product.artisan || {
+  const artisan = product.artisan && typeof product.artisan === 'object' ? product.artisan : {
      name: "Unknown Artisan",
-     image: "/images/placeholder-artisan.jpg",
+     profilePicture: "/images/placeholder-artisan.jpg",
      location: product.location?.area || "Sri Lanka",
      bio: "A master craftsman dedicated to preserving traditional techniques."
   };
   
   const stock = (product.stock || product.countInStock) > 0 ? (product.stock || product.countInStock) : 50;
+  const artisanId = location.state?.artisanId || (typeof product.artisan === 'object' ? product.artisan?._id : null);
+  const artisanName = location.state?.artisanName || (typeof product.artisan === 'object' ? product.artisan?.name : null);
 
   return (
     <div className="bg-white min-h-screen font-sans text-[#111] selection:bg-black selection:text-white pb-32">
@@ -136,6 +138,14 @@ const ProductDetails = () => {
                 </button>
             ) : location.state?.from === 'checkout' ? (
                 <Link to="/checkout" className="hover:text-black hover:opacity-70 transition-all">Checkout</Link>
+            ) : artisanName ? (
+                artisanId ? (
+                  <Link to={`/artisans/${artisanId}`} className="hover:text-black hover:opacity-70 transition-all">
+                    {artisanName}
+                  </Link>
+                ) : (
+                  <span>{artisanName}</span>
+                )
             ) : (
                 <Link to="/collection" className="hover:text-black hover:opacity-70 transition-all">Collection</Link>
             )}
