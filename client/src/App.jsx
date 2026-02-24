@@ -21,7 +21,28 @@ import Messages from './pages/dashboard/Messages';
 import Customizations from './pages/dashboard/Customizations';
 import AddProduct from './pages/dashboard/AddProduct';
 import MainLayout from './components/MainLayout';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminOverview from './pages/admin/AdminOverview';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminSystem from './pages/admin/AdminSystem';
+import AdminDatabase from './pages/admin/AdminDatabase';
+import AdminSecurity from './pages/admin/AdminSecurity';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminTransactions from './pages/admin/AdminTransactions';
+import AdminInventory from './pages/admin/AdminInventory';
+import AdminConfig from './pages/admin/AdminConfig';
+import AdminAuditTrail from './pages/admin/AdminAuditTrail';
+import AdminThreatIntel from './pages/admin/AdminThreatIntel';
+import AdminTraffic from './pages/admin/AdminTraffic';
+import AdminSessions from './pages/admin/AdminSessions';
+import AdminRuntime from './pages/admin/AdminRuntime';
+import AdminGeoMap from './pages/admin/AdminGeoMap';
+import AdminExports from './pages/admin/AdminExports';
+import AdminModeration from './pages/admin/AdminModeration';
+import AdminVerification from './pages/admin/AdminVerification';
+import AdminBroadcast from './pages/admin/AdminBroadcast';
+import AdminUserProfile from './pages/admin/AdminUserProfile';
 import UserDashboard from './pages/UserDashboard';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
@@ -94,7 +115,19 @@ function App() {
           />
         </Route>
 
-        {/* Dashboard Layouts */}
+        {/* /dashboard/orders — accessible to ALL logged-in users (buyers + sellers) */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="orders" element={<Orders />} />
+        </Route>
+
+        {/* Full Dashboard — sellers/artisans only */}
         <Route
           path="/dashboard"
           element={
@@ -107,21 +140,46 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="products/add" element={<AddProduct />} />
           <Route path="products/edit/:id" element={<AddProduct />} />
-          <Route path="orders" element={<Orders />} />
           <Route path="customizations" element={<Customizations />} />
           <Route path="settings" element={<Settings />} />
           <Route path="storefront" element={<Storefront />} />
           <Route path="messages" element={<Messages />} />
         </Route>
 
+// Import removed since we reuse DashboardLayout
+// import AdminLayout from './components/admin/AdminLayout';
+
         <Route
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminDashboard />
+              <DashboardLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<AdminOverview />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="system" element={<AdminSystem />} />
+          <Route path="database" element={<AdminDatabase />} />
+          <Route path="security" element={<AdminSecurity />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="transactions" element={<AdminTransactions />} />
+          <Route path="inventory" element={<AdminInventory />} />
+          <Route path="config" element={<AdminConfig />} />
+          <Route path="audit" element={<AdminAuditTrail />} />
+          <Route path="threats" element={<AdminThreatIntel />} />
+          <Route path="traffic" element={<AdminTraffic />} />
+          <Route path="sessions" element={<AdminSessions />} />
+          <Route path="runtime" element={<AdminRuntime />} />
+          <Route path="geo" element={<AdminGeoMap />} />
+          <Route path="exports" element={<AdminExports />} />
+          <Route path="moderation" element={<AdminModeration />} />
+          <Route path="verification" element={<AdminVerification />} />
+          <Route path="broadcast" element={<AdminBroadcast />} />
+          <Route path="users/:id" element={<AdminUserProfile />} />
+        </Route>
 
         {/* Redirects */}
         <Route path="*" element={<Navigate to="/" />} />

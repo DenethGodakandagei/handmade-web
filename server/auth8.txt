@@ -1,0 +1,134 @@
+﻿node.exe : (node:25180) 
+ExperimentalWarning: VM 
+Modules is an experimental 
+feature and might change at 
+any time
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE $NPX_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: ((node:2  
+  5180) Ex...nge at any ti   
+ me:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+(Use `node --trace-warnings 
+...` to show where the 
+warning was created)
+(node:25180) [MONGODB 
+DRIVER] Warning: 
+useNewUrlParser is a 
+deprecated option: 
+useNewUrlParser has no 
+effect since Node.js Driver 
+version 4.0.0 and will be 
+removed in the next major 
+version
+(node:25180) [MONGODB 
+DRIVER] Warning: 
+useUnifiedTopology is a 
+deprecated option: 
+useUnifiedTopology has no 
+effect since Node.js Driver 
+version 4.0.0 and will be 
+removed in the next major 
+version
+2026-02-24 12:03:02 [[31merror[39m]: MongoServerError: E11000 duplicate key error collection: test.users index: email_1 dup key: { email: "artisan@test.com" }
+    at InsertOneOperation.handleOk (D:\Handmade 2\handmade-web\server\node_modules\mongodb\src\operations\insert.ts:79:13)
+    at tryOperation (D:\Handmade 2\handmade-web\server\node_modules\mongodb\src\operations\execute_operation.ts:290:26)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at executeOperation (D:\Handmade 2\handmade-web\server\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at Collection.insertOne (D:\Handmade 2\handmade-web\server\node_modules\mongodb\src\collection.ts:294:12) 
+2026-02-24 12:03:02 [[31merror[39m]: Error: Invalid credentials
+    at login (D:\Handmade 2\handmade-web\server\controllers\authController.js:91:21) 
+2026-02-24 12:03:02 [[31merror[39m]: Error: Invalid credentials
+    at login (D:\Handmade 2\handmade-web\server\controllers\authController.js:91:21)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) 
+FAIL __tests__/integration/au
+th.integration.test.js 
+(6.166 s)
+  Auth API Integration Tests
+    POST 
+/api/v1/auth/register
+      ├ù should register a 
+new user successfully and 
+return token (367 ms)
+      ΓêÜ should return 
+error if email already 
+exists (332 ms)
+    POST /api/v1/auth/login
+      ΓêÜ should login an 
+existing user and return 
+token (278 ms)
+      ΓêÜ should fail login 
+with incorrect password (255 
+ms)
+      ΓêÜ should fail if 
+email does not exist (152 ms)
+
+  ΓùÅ Auth API Integration 
+Tests ΓÇ║ POST 
+/api/v1/auth/register ΓÇ║ 
+should register a new user 
+successfully and return token
+
+    expect(received).toBe(exp
+ected) // Object.is equality
+
+    Expected: "artisan"
+    Received: "user"
+
+    [0m [90m 46 |[39m     
+        [36mconst[39m user 
+[33m=[39m [36mawait[39m 
+[33mUser[39m[33m.[39mfindO
+ne({ email[33m:[39m 
+validUser[33m.[39memail 
+})[33m;[39m
+     [90m 47 |[39m         
+    expect(user)[33m.[39mto
+BeTruthy()[33m;[39m
+    
+[31m[1m>[22m[39m[90m 48 
+|[39m             expect(use
+r[33m.[39mrole)[33m.[39mt
+oBe([32m'artisan'[39m)[33m
+;[39m
+     [90m    |[39m         
+                      
+[31m[1m^[22m[39m
+     [90m 49 |[39m         
+})[33m;[39m
+     [90m 50 |[39m
+     [90m 51 |[39m         
+it([32m'should return error 
+if email already 
+exists'[39m[33m,[39m 
+[36masync[39m () 
+[33m=>[39m {[0m
+
+      at Object.<anonymous> (
+__tests__/integration/auth.in
+tegration.test.js:48:31)
+
+Test Suites: 1 failed, 1 
+total
+Tests:       1 failed, 4 
+passed, 5 total
+Snapshots:   0 total
+Time:        6.264 s
+Ran all test suites matching 
+/__tests__\\integration\\auth
+.integration.test.js/i.
+Force exiting Jest: Have you 
+considered using 
+`--detectOpenHandles` to 
+detect async operations that 
+kept running after all tests 
+finished?
