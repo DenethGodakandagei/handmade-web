@@ -1,21 +1,12 @@
 import { createServer } from 'http';
 import { initSocket } from './utils/socket.js';
 import app from './app.js';
-import { ENV } from './utils/env.js';
+import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import logger from './config/logger.js';
-import express from "express";
-import cookieParser from "cookie-parser";
-import path from "path";
-import cors from "cors";
 
-
-
-const __dirname = path.resolve();
-
-app.use(express.json({ limit: "5mb" })); // req.body
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
-app.use(cookieParser());
+// Load env vars
+dotenv.config();
 
 // Connect to database
 connectDB();

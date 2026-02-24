@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, CheckCircle, XCircle } from 'lucide-react';
@@ -5,16 +6,10 @@ import customizationService from '../../api/services/customizationService';
 import DashboardHeader from '../../components/dashboard/DashboardHeader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { toast } from 'sonner';
 
 const Customizations = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [priceModalOpen, setPriceModalOpen] = useState(false);
-    const [selectedRequest, setSelectedRequest] = useState(null);
-    const [agreedPrice, setAgreedPrice] = useState("");
 
     useEffect(() => {
         fetchRequests();
@@ -31,37 +26,12 @@ const Customizations = () => {
         }
     };
 
-    const handleStatusUpdate = async (id, statusOrPayload) => {
+    const handleStatusUpdate = async (id, status) => {
         try {
-            let finalPayload = typeof statusOrPayload === 'string' ? { status: statusOrPayload } : statusOrPayload;
-            await customizationService.updateStatus(id, finalPayload);
+            await customizationService.updateStatus(id, status);
             fetchRequests();
         } catch (error) {
             console.error("Failed to update status", error);
-        }
-    };
-
-    const handleAcceptClick = (req) => {
-        setSelectedRequest(req);
-        setAgreedPrice("");
-        setPriceModalOpen(true);
-    };
-
-    const handleConfirmPrice = async () => {
-        const price = parseFloat(agreedPrice);
-        if (isNaN(price) || price <= 0) {
-            toast.error("Invalid Price", { description: "Please enter a valid positive number for the price." });
-            return;
-        }
-
-        try {
-            await customizationService.updateStatus(selectedRequest._id, { status: 'Accepted', price: price });
-            setPriceModalOpen(false);
-            setSelectedRequest(null);
-            fetchRequests();
-        } catch (error) {
-            console.error("Failed to update status", error);
-            toast.error("Error", { description: "Failed to accept the request. Please try again." });
         }
     };
 
@@ -136,7 +106,7 @@ const Customizations = () => {
                                         {req.status === 'Pending' && (
                                             <>
                                                 <Button
-                                                    onClick={() => handleAcceptClick(req)}
+                                                    onClick={() => handleStatusUpdate(req._id, 'Accepted')}
                                                     className="w-full h-12 bg-black text-white hover:bg-gray-800 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-black/10"
                                                 >
                                                     <CheckCircle size={14} className="mr-2" /> Accept
@@ -173,47 +143,6 @@ const Customizations = () => {
                     )}
                 </div>
             )}
-
-            <Dialog open={priceModalOpen} onOpenChange={setPriceModalOpen}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-light tracking-tight">Set Commission Price</DialogTitle>
-                        <DialogDescription className="text-gray-500 mt-2">
-                            Please enter the final agreed total price for this bespoke commission. The client will be asked to pay this amount.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-6">
-                        <div className="flex flex-col gap-3">
-                            <label htmlFor="price" className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                                Agreed Price (USD)
-                            </label>
-                            <Input
-                                id="price"
-                                type="number"
-                                placeholder="e.g. 150.00"
-                                value={agreedPrice}
-                                onChange={(e) => setAgreedPrice(e.target.value)}
-                                className="h-12 text-lg font-light border-gray-200 focus:border-black rounded-xl"
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter className="flex flex-col sm:flex-row gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={() => setPriceModalOpen(false)}
-                            className="w-full sm:w-auto h-12 border-gray-200 text-black hover:bg-gray-50 rounded-xl text-xs font-bold uppercase tracking-widest"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleConfirmPrice}
-                            className="w-full sm:w-auto h-12 bg-black text-white hover:bg-gray-800 rounded-xl text-xs font-bold uppercase tracking-widest"
-                        >
-                            Confirm & Accept
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </motion.div>
     );
 };

@@ -39,14 +39,6 @@ const CustomizationRequestSchema = new mongoose.Schema({
     enum: ['Pending', 'Accepted', 'Rejected', 'Completed'],
     default: 'Pending'
   },
-  price: {
-    type: Number,
-    default: null
-  },
-  isPaid: {
-    type: Boolean,
-    default: false
-  },
   createdAt: {
     type: Date,
     default: Date.now
