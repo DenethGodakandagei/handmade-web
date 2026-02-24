@@ -74,32 +74,3 @@ export const deleteUser = async (req, res, next) => {
     next(err);
   }
 };
-
-// @desc      Get all artisans
-// @route     GET /api/v1/users/artisans/all
-// @access    Public
-export const getPublicArtisans = async (req, res, next) => {
-  try {
-    const artisans = await userService.getArtisans();
-    sendSuccess(res, 200, 'Artisans fetched', artisans);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// @desc      Get single artisan
-// @route     GET /api/v1/users/artisans/:id
-// @access    Public
-export const getPublicArtisan = async (req, res, next) => {
-  try {
-    const artisan = await userService.getArtisan(req.params.id);
-
-    if (!artisan) {
-      return next(new ErrorResponse('Artisan not found', 404));
-    }
-
-    sendSuccess(res, 200, 'Artisan found', artisan);
-  } catch (err) {
-    next(err);
-  }
-};

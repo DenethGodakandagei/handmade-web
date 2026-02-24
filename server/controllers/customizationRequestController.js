@@ -64,12 +64,7 @@ export const updateCustomizationStatus = async (req, res, next) => {
       return next(new ErrorResponse('Not authorized to update this request', 403));
     }
 
-    const updateData = { status: req.body.status };
-    if (req.body.price !== undefined) {
-      updateData.price = req.body.price;
-    }
-
-    const updatedRequest = await customizationService.updateRequestStatus(req.params.id, updateData);
+    const updatedRequest = await customizationService.updateRequestStatus(req.params.id, req.body.status);
 
     sendSuccess(res, 200, 'Status updated', updatedRequest);
   } catch (err) {

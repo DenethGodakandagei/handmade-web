@@ -15,11 +15,11 @@ export const getOrderById = async (id) => {
 }
 
 export const getOrdersByUser = async (userId) => {
-    return await Order.find({ user: userId }).sort({ createdAt: -1 });
+    return await Order.find({ user: userId });
 }
 
 export const getAllOrders = async (query = {}) => {
-    return await Order.find(query).populate('user', 'id name email').sort({ createdAt: -1 });
+    return await Order.find(query).populate('user', 'id name');
 }
 
 export const updateOrder = async (id, updateData) => {

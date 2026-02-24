@@ -23,10 +23,10 @@ export const getRequestById = async (id) => {
     .populate('artisan', 'name email');
 };
 
-export const updateRequestStatus = async (id, data) => {
+export const updateRequestStatus = async (id, status) => {
   return await CustomizationRequest.findByIdAndUpdate(
     id,
-    data,
+    { status },
     { new: true, runValidators: true }
   );
 };

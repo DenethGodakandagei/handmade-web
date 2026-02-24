@@ -36,40 +36,6 @@ const options = {
                         },
                     },
                 },
-                RegisterRequest: {
-                    type: 'object',
-                    required: ['name', 'email', 'password', 'role'],
-                    properties: {
-                        name: { type: 'string', example: 'John Doe' },
-                        email: { type: 'string', example: 'john@example.com' },
-                        password: { type: 'string', example: 'password123' },
-                        role: { type: 'string', enum: ['user', 'artisan'], example: 'user' },
-                    },
-                },
-                LoginRequest: {
-                    type: 'object',
-                    required: ['email', 'password'],
-                    properties: {
-                        email: { type: 'string', example: 'john@example.com' },
-                        password: { type: 'string', example: 'password123' },
-                    },
-                },
-                AuthResponse: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean', example: true },
-                        token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5c...' },
-                        data: {
-                            type: 'object',
-                            properties: {
-                                _id: { type: 'string', example: '65f6c82bbd5e2a14e0a7f34c' },
-                                name: { type: 'string', example: 'John Doe' },
-                                email: { type: 'string', example: 'john@example.com' },
-                                role: { type: 'string', example: 'user' }
-                            }
-                        }
-                    }
-                }
             },
         },
         security: [

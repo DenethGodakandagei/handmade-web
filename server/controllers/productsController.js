@@ -12,6 +12,10 @@ import asyncHandler from '../middleware/asyncHandler.js';
 export const getProducts = asyncHandler(async (req, res, next) => {
   const { products, pagination, count } = await productService.getAllProducts(req.query);
 
+  if (req.cacheKey) {
+    setCache(req.cacheKey, products, 60);
+  }
+
   ResponseHandler.success(res, 200, 'Products fetched successfully', {
     products,
     pagination,

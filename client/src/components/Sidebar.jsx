@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard, Users, ShoppingBag, Settings,
-  LogOut, ChevronLeft, ChevronRight, Hammer,
+import { 
+  LayoutDashboard, Users, ShoppingBag, Settings, 
+  LogOut, ChevronLeft, ChevronRight, Hammer, 
   ShieldCheck, ArrowLeft, Package, User, Database,
   Sparkles, Zap
 } from 'lucide-react';
@@ -18,11 +18,10 @@ const Sidebar = ({ role }) => {
 
   const artisanMenu = [
     { name: 'Workshop Overview', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Heritage archives', path: '/dashboard/products', icon: Package },
-    { name: 'Succession orders', path: '/dashboard/orders', icon: ShoppingBag },
-    { name: 'Bespoke Requests', path: '/dashboard/customizations', icon: Sparkles },
-    { name: 'Master Identity', path: '/account', icon: User },
-    { name: 'Core Tuning', path: '/dashboard/settings', icon: Settings },
+    { name: 'Heritage archives', path: '/products', icon: Package },
+    { name: 'Succession orders', path: '/orders', icon: ShoppingBag },
+    { name: 'Master Identity', path: '/profile', icon: User },
+    { name: 'Core Tuning', path: '/settings', icon: Settings },
   ];
 
   const adminMenu = [
@@ -46,14 +45,14 @@ const Sidebar = ({ role }) => {
       <div className="p-10 flex items-center justify-between border-b border-gray-50/50">
         <AnimatePresence mode="wait">
           {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }} 
+              animate={{ opacity: 1, x: 0 }} 
               exit={{ opacity: 0, x: -10 }}
               className="flex items-center space-x-4"
             >
               <div className="bg-primary p-2.5 rounded-2xl text-white shadow-xl shadow-primary/20">
-                <Hammer size={18} />
+                 <Hammer size={18} />
               </div>
               <span className="font-black text-xl tracking-tighter uppercase whitespace-nowrap">
                 {role === 'admin' ? 'Archive.' : 'Workshop.'}
@@ -61,7 +60,7 @@ const Sidebar = ({ role }) => {
             </motion.div>
           )}
         </AnimatePresence>
-        <button
+        <button 
           onClick={() => setCollapsed(!collapsed)}
           className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-black hover:text-white transition-all text-gray-400 group"
         >
@@ -71,10 +70,10 @@ const Sidebar = ({ role }) => {
 
       {/* Navigation */}
       <nav className="flex-1 mt-10 px-6 space-y-3">
-        <Link to="/" className="flex items-center space-x-4 px-6 py-4 text-gray-300 hover:text-black mb-8 group transition-all rounded-3xl hover:bg-gray-50/50">
-          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          {!collapsed && <span className="text-[10px] font-black uppercase tracking-[0.3em]">Master Exit</span>}
-        </Link>
+         <Link to="/" className="flex items-center space-x-4 px-6 py-4 text-gray-300 hover:text-black mb-8 group transition-all rounded-3xl hover:bg-gray-50/50">
+            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+            {!collapsed && <span className="text-[10px] font-black uppercase tracking-[0.3em]">Master Exit</span>}
+         </Link>
 
         {currentMenu.map((item) => {
           const isActive = location.pathname === item.path;
@@ -88,7 +87,7 @@ const Sidebar = ({ role }) => {
               `}
             >
               <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-primary' : ''} />
-
+              
               <AnimatePresence>
                 {!collapsed && (
                   <motion.span
@@ -114,16 +113,16 @@ const Sidebar = ({ role }) => {
 
       {/* User Session Footer */}
       <div className="p-6 border-t border-gray-50/50">
-        <button
-          onClick={() => {
-            logout();
-            navigate('/login');
-          }}
-          className="w-full flex items-center px-6 py-5 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-[2rem] group"
-        >
-          <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
-          {!collapsed && <span className="ml-5 text-[10px] font-black uppercase tracking-[0.4em]">Retreat</span>}
-        </button>
+         <button 
+           onClick={() => {
+             logout();
+             navigate('/login');
+           }}
+           className="w-full flex items-center px-6 py-5 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-[2rem] group"
+         >
+            <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
+            {!collapsed && <span className="ml-5 text-[10px] font-black uppercase tracking-[0.4em]">Retreat</span>}
+         </button>
       </div>
     </motion.aside>
   );

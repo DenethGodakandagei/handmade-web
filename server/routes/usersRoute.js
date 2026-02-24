@@ -4,20 +4,13 @@ import {
   getUser,
   createUser,
   updateUser,
-  deleteUser,
-  getPublicArtisans,
-  getPublicArtisan
+  deleteUser
 } from '../controllers/usersController.js';
 
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router({ mergeParams: true });
 
-// Public routes
-router.get('/artisans/all', getPublicArtisans);
-router.get('/artisans/:id', getPublicArtisan);
-
-// Protected Admin routes
 router.use(protect);
 router.use(authorize('admin'));
 

@@ -22,11 +22,3 @@ export const updateUser = async (id, userData) => {
 export const deleteUser = async (id) => {
   return await User.findByIdAndDelete(id);
 };
-
-export const getArtisans = async () => {
-  return await User.find({ role: 'artisan' });
-};
-
-export const getArtisan = async (id) => {
-  return await User.findOne({ _id: id, role: 'artisan' });
-};

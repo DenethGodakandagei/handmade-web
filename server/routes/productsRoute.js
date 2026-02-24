@@ -59,7 +59,7 @@ const uploadFields = upload.fields([
  */
 router
   .route('/')
-  .get(getProducts)
+  .get(checkCache, getProducts)
   .post(protect, authorize('artisan', 'admin'), uploadFields, createProduct);
 
 router
