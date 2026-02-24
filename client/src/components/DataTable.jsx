@@ -2,33 +2,35 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, ChevronUp, Edit2, Trash2, Heart, MoreHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 
-const DataTable = ({ 
-  columns, 
-  data, 
-  onEdit, 
-  onDelete, 
-  onFavorite, 
-  isLoading 
+const DataTable = ({
+  columns,
+  data,
+  onEdit,
+  onDelete,
+  onFavorite,
+  isLoading,
+  hideSearch
 }) => {
+  const hasBuiltInActions = !!(onEdit || onDelete || onFavorite);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState(null);
 
   // Sorting & Filtering
   const filteredSortedData = React.useMemo(() => {
     let items = [...data];
-    
+
     if (searchTerm) {
-      items = items.filter(item => 
-        Object.values(item).some(val => 
+      items = items.filter(item =>
+        Object.values(item).some(val =>
           String(val).toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
@@ -57,17 +59,19 @@ const DataTable = ({
   return (
     <div className="w-full bg-white border border-gray-100 overflow-hidden rounded-none">
       {/* Header / Toolbar */}
-      <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative max-w-sm w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
-          <Input 
-            placeholder="SEARCH RECORDS..." 
-            className="pl-10 h-11 rounded-none border-gray-100 text-[10px] uppercase font-bold tracking-widest focus-visible:ring-black"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {!hideSearch && (
+        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative max-w-sm w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
+            <Input
+              placeholder="SEARCH RECORDS..."
+              className="pl-10 h-11 rounded-none border-gray-100 text-[10px] uppercase font-bold tracking-widest focus-visible:ring-black"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -75,8 +79,8 @@ const DataTable = ({
           <TableHeader className="bg-gray-50/50">
             <TableRow className="hover:bg-transparent border-gray-100">
               {columns.map((col) => (
-                <TableHead 
-                  key={col.key} 
+                <TableHead
+                  key={col.key}
                   className={`px-6 py-4 cursor-pointer hover:bg-gray-100 transition-colors text-[10px] font-bold uppercase tracking-widest text-gray-400 h-14 ${col.className}`}
                   onClick={() => requestSort(col.key)}
                 >
@@ -88,7 +92,9 @@ const DataTable = ({
                   </div>
                 </TableHead>
               ))}
-              <TableHead className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-widest text-gray-400">Actions</TableHead>
+              {hasBuiltInActions && (
+                <TableHead className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-widest text-gray-400">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -110,7 +116,7 @@ const DataTable = ({
                 </TableRow>
               ) : (
                 filteredSortedData.map((row, idx) => (
-                  <motion.tr 
+                  <motion.tr
                     key={row._id || idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -123,37 +129,39 @@ const DataTable = ({
                         {col.render ? col.render(row[col.key], row) : row[col.key]}
                       </TableCell>
                     ))}
-                    <TableCell className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        {onFavorite && (
-                          <button 
-                            onClick={() => onFavorite(row)}
-                            className={`p-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all ${row.isFavorite ? 'text-red-500' : 'text-gray-300'}`}
-                          >
-                            <Heart size={14} fill={row.isFavorite ? "currentColor" : "none"} />
+                    {hasBuiltInActions && (
+                      <TableCell className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          {onFavorite && (
+                            <button
+                              onClick={() => onFavorite(row)}
+                              className={`p-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all ${row.isFavorite ? 'text-red-500' : 'text-gray-300'}`}
+                            >
+                              <Heart size={14} fill={row.isFavorite ? "currentColor" : "none"} />
+                            </button>
+                          )}
+                          {onEdit && (
+                            <button
+                              onClick={() => onEdit(row)}
+                              className="p-2 text-gray-400 hover:text-black hover:bg-white border border-transparent hover:border-gray-100 transition-all"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(row)}
+                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-white border border-transparent hover:border-gray-100 transition-all"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                          <button className="p-2 text-gray-300">
+                            <MoreHorizontal size={14} />
                           </button>
-                        )}
-                        {onEdit && (
-                          <button 
-                            onClick={() => onEdit(row)}
-                            className="p-2 text-gray-400 hover:text-black hover:bg-white border border-transparent hover:border-gray-100 transition-all"
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                        )}
-                        {onDelete && (
-                          <button 
-                            onClick={() => onDelete(row)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-white border border-transparent hover:border-gray-100 transition-all"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                        <button className="p-2 text-gray-300">
-                           <MoreHorizontal size={14} />
-                        </button>
-                      </div>
-                    </TableCell>
+                        </div>
+                      </TableCell>
+                    )}
                   </motion.tr>
                 ))
               )}

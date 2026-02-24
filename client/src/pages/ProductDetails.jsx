@@ -20,6 +20,7 @@ import ServiceBadges from '../components/product-details/ServiceBadges';
 import MarqueeBanner from '../components/product-details/MarqueeBanner';
 import TechnicalDetails from '../components/product-details/TechnicalDetails';
 import ArtisanSection from '../components/product-details/ArtisanSection';
+import ReviewSection from '../components/product-details/ReviewSection';
 import RelatedProducts from '../components/RelatedProducts';
 
 const ProductDetails = () => {
@@ -50,30 +51,30 @@ const ProductDetails = () => {
   // Handle Navigation & Data Fetching
   useEffect(() => {
     const fetchProduct = async () => {
-        try {
-          setLoading(true);
-          const res = await productService.getById(id);
-          setProduct(res.data);
-          setLoading(false);
-        } catch (err) {
-          console.error(err);
-          setLoading(false);
-        }
+      try {
+        setLoading(true);
+        const res = await productService.getById(id);
+        setProduct(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
+      }
     };
 
     // 1. Try to use cached product from navigation state or cart
     const reliableProduct = location.state?.product || cartItems.find(item => item.product._id === id)?.product;
 
     if (reliableProduct) {
-        setProduct(reliableProduct);
-        setLoading(false);
+      setProduct(reliableProduct);
+      setLoading(false);
     } else {
-        // 2. If no cache or ID mismatch, fetch from API
-        if (!product || product._id !== id) {
-             fetchProduct();
-        }
+      // 2. If no cache or ID mismatch, fetch from API
+      if (!product || product._id !== id) {
+        fetchProduct();
+      }
     }
-    
+
     // Reset View
     window.scrollTo(0, 0);
   }, [id, location.state]);
@@ -89,7 +90,7 @@ const ProductDetails = () => {
   // Loading State
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6]">
-        <Spinner />
+      <Spinner />
     </div>
   );
 
@@ -97,7 +98,7 @@ const ProductDetails = () => {
   if (!product) return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#FAF9F6]">
       <div className="w-24 h-24 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-8">
-         <ArrowRight size={40} />
+        <ArrowRight size={40} />
       </div>
       <h2 className="text-4xl font-light tracking-tight uppercase mb-6">Archive Missing</h2>
       <Button asChild className="h-14 px-10 bg-black text-white hover:bg-gray-800 tracking-widest uppercase text-xs font-bold rounded-none">
@@ -107,25 +108,25 @@ const ProductDetails = () => {
   );
 
   // Derived Data
-  const artisan = product.artisan && typeof product.artisan === 'object' ? product.artisan : {
+  const artisan = product.artisan || {
      name: "Unknown Artisan",
-     profilePicture: "/images/placeholder-artisan.jpg",
+     image: "/images/placeholder-artisan.jpg",
      location: product.location?.area || "Sri Lanka",
      bio: "A master craftsman dedicated to preserving traditional techniques."
   };
-  
+
   const stock = (product.stock || product.countInStock) > 0 ? (product.stock || product.countInStock) : 50;
   const artisanId = location.state?.artisanId || (typeof product.artisan === 'object' ? product.artisan?._id : null);
   const artisanName = location.state?.artisanName || (typeof product.artisan === 'object' ? product.artisan?.name : null);
 
   return (
     <div className="bg-white min-h-screen font-sans text-[#111] selection:bg-black selection:text-white pb-32">
-      
+
       {/* Container for Main Content */}
       <div className="container mx-auto px-6 md:px-12">
-          
-          {/* Navbar Spacing */}
-          <div className="h-32"></div>
+
+        {/* Navbar Spacing */}
+        <div className="h-32"></div>
 
           {/* Breadcrumbs */}
           <nav className="flex items-center space-x-2 text-[11px] font-medium uppercase text-gray-400 mb-12 tracking-normal">
@@ -138,14 +139,6 @@ const ProductDetails = () => {
                 </button>
             ) : location.state?.from === 'checkout' ? (
                 <Link to="/checkout" className="hover:text-black hover:opacity-70 transition-all">Checkout</Link>
-            ) : artisanName ? (
-                artisanId ? (
-                  <Link to={`/artisans/${artisanId}`} className="hover:text-black hover:opacity-70 transition-all">
-                    {artisanName}
-                  </Link>
-                ) : (
-                  <span>{artisanName}</span>
-                )
             ) : (
                 <Link to="/collection" className="hover:text-black hover:opacity-70 transition-all">Collection</Link>
             )}
@@ -154,32 +147,32 @@ const ProductDetails = () => {
             <span className="text-black">{product.name}</span>
           </nav>
 
-          {/* Main Product Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
-             
-             {/* Left: Gallery */}
-             {/* Key ensures state reset on new product */}
-             <ProductGallery key={`gallery-${product._id}`} product={product} />
+        {/* Main Product Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
 
-             {/* Right: Details */}
-             <div className="lg:col-span-6 flex flex-col h-full pt-4">
-                <ProductInfo 
-                    product={product} 
-                    stock={stock} 
-                    formatPrice={formatPrice} 
-                />
-                
-                <ProductActions 
-                    key={`actions-${product._id}`}
-                    product={product} 
-                    stock={stock} 
-                    isAuthenticated={isAuthenticated} 
-                    user={user} 
-                />
+          {/* Left: Gallery */}
+          {/* Key ensures state reset on new product */}
+          <ProductGallery key={`gallery-${product._id}`} product={product} />
 
-                <ServiceBadges />
-             </div>
+          {/* Right: Details */}
+          <div className="lg:col-span-6 flex flex-col h-full pt-4">
+            <ProductInfo
+              product={product}
+              stock={stock}
+              formatPrice={formatPrice}
+            />
+
+            <ProductActions
+              key={`actions-${product._id}`}
+              product={product}
+              stock={stock}
+              isAuthenticated={isAuthenticated}
+              user={user}
+            />
+
+            <ServiceBadges />
           </div>
+        </div>
       </div>
 
       {/* Technical Details (Container Internal) */}
@@ -188,11 +181,14 @@ const ProductDetails = () => {
       {/* Artisan Section (Container Internal) */}
       <ArtisanSection artisan={artisan} />
 
+      {/* Customer Reviews */}
+      <ReviewSection productId={product._id} averageRating={product.averageRating} artisanId={product.artisan?._id || product.artisan} />
+
       {/* Full Width Marquee */}
       <MarqueeBanner />
 
       {/* Related Products (Container Internal) */}
-      <RelatedProducts />
+      <RelatedProducts productId={product._id} categoryId={product.category?._id || product.category} />
 
     </div>
   );

@@ -7,7 +7,7 @@ export const getAllProducts = async (reqQuery) => {
   const queryObj = { ...reqQuery };
 
   // Fields to exclude
-  const removeFields = ['select', 'sort', 'page', 'limit'];
+  const removeFields = ['select', 'sort', 'page', 'limit', 'noCache'];
 
   // Loop over removeFields and delete from reqQuery
   removeFields.forEach(param => delete queryObj[param]);
