@@ -4,7 +4,8 @@ import {
   getReview,
   addReview,
   updateReview,
-  deleteReview
+  deleteReview,
+  replyReview
 } from '../controllers/reviewsController.js';
 
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -22,5 +23,9 @@ router
   .get(getReview)
   .put(protect, authorize('user', 'admin'), updateReview)
   .delete(protect, authorize('user', 'admin'), deleteReview);
+
+router
+  .route('/:id/reply')
+  .post(protect, authorize('artisan', 'admin'), replyReview);
 
 export default router;
