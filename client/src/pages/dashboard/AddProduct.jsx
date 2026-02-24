@@ -384,13 +384,13 @@ const AddProduct = () => {
                                     <Label className="uppercase text-[10px] tracking-widest text-gray-400 font-bold">Price ($)</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                                        <Input type="number" step="0.01" {...register('price')} className="input-premium bg-white pl-8" />
+                                        <Input type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="input-premium bg-white pl-8" />
                                     </div>
                                     {errors.price && <span className="text-red-500 text-xs">{errors.price.message}</span>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="uppercase text-[10px] tracking-widest text-gray-400 font-bold">Stock Quantity</Label>
-                                    <Input type="number" {...register('stock')} className="input-premium bg-white" />
+                                    <Input type="number" min="0" {...register('stock', { valueAsNumber: true })} className="input-premium bg-white" />
                                     {errors.stock && <span className="text-red-500 text-xs">{errors.stock.message}</span>}
                                 </div>
                             </div>

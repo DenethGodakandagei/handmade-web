@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
@@ -8,39 +8,50 @@ import useAuthStore from '@/store/authStore';
 import DataTable from '@/components/DataTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 const Products = () => {
     const navigate = useNavigate();
-    const { user } = useAuthStore();
+    const location = useLocation();
+    const { user, fetchMe } = useAuthStore();
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                // Fetch products for the current artisan
-                const res = await productService.getAll({ artisan: user._id });
-                setProducts(res.data.products || res.data); // Handle potential response structure variations
-            } catch (error) {
-                console.error("Failed to fetch products", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        if (user) {
-            fetchProducts();
+    const fetchProducts = useCallback(async () => {
+        if (!user?._id) return;
+        try {
+            setIsLoading(true);
+            const res = await productService.getAll({ artisan: user._id, noCache: true });
+            setProducts(res.data.products || res.data);
+        } catch (error) {
+            console.error("Failed to fetch products", error);
+            toast.error('Failed to load products');
+        } finally {
+            setIsLoading(false);
         }
     }, [user]);
+
+    useEffect(() => {
+        // If user exists but _id is missing, refresh user data from server
+        if (user && !user._id) {
+            fetchMe();
+        }
+    }, [user, fetchMe]);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts, location.key]);
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
             try {
                 await productService.delete(id);
-                setProducts(products.filter(p => p._id !== id));
+                setProducts(prev => prev.filter(p => p._id !== id));
+                toast.success('Product deleted successfully');
             } catch (error) {
                 console.error("Failed to delete product", error);
+                toast.error('Failed to delete product');
             }
         }
     };
@@ -120,30 +131,25 @@ const Products = () => {
                     <h1 className="text-3xl font-light tracking-tight text-black">Product Collection</h1>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold mt-2">Manage your catalog and inventory</p>
                 </div>
-                <Button
-                    onClick={() => navigate('/dashboard/products/add')}
-                    className="bg-black text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition-colors rounded-none"
-                >
-                    <Plus size={16} className="mr-2" />
-                    New Creation
-                </Button>
-            </header>
-
-            {/* Filters */}
-            <div className="flex items-center space-x-4 bg-white p-4 rounded-2xl border border-gray-50 shadow-sm">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    <Input
-                        placeholder="Search products..."
-                        className="pl-11 bg-gray-50 border-transparent focus:bg-white transition-all rounded-xl"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                        <Input
+                            placeholder="Search products..."
+                            className="pl-9 w-56 h-10 bg-gray-50 border-gray-100 focus:bg-white transition-all rounded-lg text-sm"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <Button
+                        onClick={() => navigate('/dashboard/products/add')}
+                        className="bg-black text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition-colors rounded-none"
+                    >
+                        <Plus size={16} className="mr-2" />
+                        New Creation
+                    </Button>
                 </div>
-                <Button variant="outline" size="icon" className="rounded-xl border-gray-100">
-                    <Filter size={16} className="text-gray-500" />
-                </Button>
-            </div>
+            </header>
 
             {/* Products Table or Empty State */}
             {filteredProducts.length > 0 ? (
@@ -152,6 +158,7 @@ const Products = () => {
                         columns={columns}
                         data={filteredProducts}
                         isLoading={isLoading}
+                        hideSearch
                     />
                 </div>
             ) : (

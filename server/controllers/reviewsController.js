@@ -76,8 +76,10 @@ export const updateReview = async (req, res, next) => {
       );
     }
 
-    // Make sure review belongs to user or user is admin
-    if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    const product = await Product.findById(review.product._id);
+
+    // Make sure review belongs to user, user is admin, or user is the product artisan
+    if (review.user._id.toString() !== req.user.id && req.user.role !== 'admin' && product.artisan.toString() !== req.user.id) {
       return next(new ErrorResponse(`Not authorized to update review`, 401));
     }
 
@@ -102,14 +104,55 @@ export const deleteReview = async (req, res, next) => {
       );
     }
 
-    // Make sure review belongs to user or user is admin
-    if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    const product = await Product.findById(review.product._id);
+
+    // Make sure review belongs to user, user is admin, or user is the product artisan
+    if (review.user._id.toString() !== req.user.id && req.user.role !== 'admin' && product.artisan.toString() !== req.user.id) {
       return next(new ErrorResponse(`Not authorized to delete review`, 401));
     }
 
     await reviewService.deleteReview(review);
 
     sendSuccess(res, 200, 'Review deleted', {});
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc      Reply to a review
+// @route     POST /api/v1/reviews/:id/reply
+// @access    Private (Artisan/Admin)
+export const replyReview = async (req, res, next) => {
+  try {
+    let review = await reviewService.getReviewById(req.params.id);
+
+    if (!review) {
+      return next(
+        new ErrorResponse(`No review with the id of ${req.params.id}`, 404)
+      );
+    }
+
+    const product = await Product.findById(review.product._id);
+    if (!product) {
+      return next(new ErrorResponse(`Product not found`, 404));
+    }
+
+    // Make sure artisan owns the product, or user is admin
+    if (product.artisan.toString() !== req.user.id && req.user.role !== 'admin') {
+      return next(new ErrorResponse(`Not authorized to reply to reviews for this product`, 401));
+    }
+
+    const { artisanReply } = req.body;
+    if (!artisanReply) {
+      return next(new ErrorResponse(`Please provide a reply message`, 400));
+    }
+
+    review = await reviewService.updateReview(req.params.id, {
+      artisanReply,
+      repliedAt: Date.now()
+    });
+
+    sendSuccess(res, 200, 'Reply added', review);
   } catch (err) {
     next(err);
   }

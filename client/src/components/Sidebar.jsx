@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, ShoppingBag, Settings,
   LogOut, ChevronLeft, ChevronRight, Hammer,
   ShieldCheck, ArrowLeft, Package, User, Database,
-  Sparkles, Zap
+  Sparkles, Zap, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useAuthStore from '../store/authStore';
@@ -19,6 +19,7 @@ const Sidebar = ({ role }) => {
   const artisanMenu = [
     { name: 'Workshop Overview', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Heritage archives', path: '/dashboard/products', icon: Package },
+    { name: 'Patron Reviews', path: '/dashboard/reviews', icon: MessageSquare },
     { name: 'Succession orders', path: '/dashboard/orders', icon: ShoppingBag },
     { name: 'Bespoke Requests', path: '/dashboard/customizations', icon: Sparkles },
     { name: 'Master Identity', path: '/account', icon: User },
@@ -29,6 +30,7 @@ const Sidebar = ({ role }) => {
     { name: 'Security Core', path: '/admin', icon: ShieldCheck },
     { name: 'Identity Index', path: '/admin/users', icon: Users },
     { name: 'Archive Control', path: '/admin/products', icon: Database },
+    { name: 'Review Vault', path: '/admin/reviews', icon: MessageSquare },
     { name: 'Pulse Log', path: '/admin/orders', icon: Zap },
     { name: 'System Heart', path: '/admin/settings', icon: Settings },
   ];
