@@ -1,6 +1,7 @@
 import { ErrorResponse, sendSuccess } from '../utils/responseUtils.js';
 import * as orderService from '../services/orderService.js';
 import Product from '../models/ProductModel.js';
+import CustomizationRequest from '../models/CustomizationRequestModel.js';
 import { allowedCountries } from '../utils/allowedCountries.js';
 
 // @desc      Create new order
@@ -47,24 +48,40 @@ export const createOrder = async (req, res, next) => {
         return next(new ErrorResponse(`Product not found with id ${item.product}`, 404));
       }
 
-      // Check stock
-      if (product.stock < item.quantity) {
-        if (product.isPreOrder) {
-          isPreOrderOrder = true;
+      let itemPrice = product.price;
+
+      if (item.customizationRequest) {
+        const customReq = await CustomizationRequest.findById(item.customizationRequest);
+        if (customReq && customReq.status === 'Accepted' && customReq.price) {
+          itemPrice = customReq.price;
+          customReq.isPaid = true;
+          await customReq.save();
         } else {
-          return next(new ErrorResponse(`Product ${product.name} is out of stock`, 400));
+          return next(new ErrorResponse(`Customization request invalid, unauthorized, or not accepted.`, 400));
         }
       } else {
-        // Mark logic for update (Verified in memory)
-        product.stock = product.stock - item.quantity;
-        productsToUpdate.push(product);
+        // Check stock for standard physical purchases only
+        if (product.stock < item.quantity) {
+          if (product.isPreOrder) {
+            if (req.preordersAllowed === false) {
+              return next(new ErrorResponse(`Pre-orders are currently disabled by the platform administrator. Product "${product.name}" is out of stock.`, 403));
+            }
+            isPreOrderOrder = true;
+          } else {
+            return next(new ErrorResponse(`Product ${product.name} is out of stock`, 400));
+          }
+        } else {
+          // Mark logic for update (Verified in memory)
+          product.stock -= item.quantity;
+          productsToUpdate.push(product);
+        }
       }
 
       finalOrderItems.push({
         product: product._id,
         name: product.name,
         quantity: item.quantity,
-        price: product.price,
+        price: itemPrice,
         image: product.images[0],
         customizations: item.customizations || [],
         customizationRequest: item.customizationRequest || null,
@@ -72,7 +89,7 @@ export const createOrder = async (req, res, next) => {
         designImage: item.designImage || null
       });
 
-      totalAmount += product.price * item.quantity;
+      totalAmount += itemPrice * item.quantity;
     }
 
     // Perform all DB writes in parallel (Non-blocking)

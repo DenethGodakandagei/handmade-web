@@ -21,8 +21,8 @@ const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleLogout = () => {
-      setIsSheetOpen(false);
-      logout();
+    setIsSheetOpen(false);
+    logout();
   }
 
   const validItems = Array.isArray(items) ? items.filter(item => item && item.product) : [];
@@ -100,24 +100,28 @@ const Navbar = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-full sm:max-w-md border-l border-gray-100 bg-white p-10 flex flex-col h-full data-[state=open]:duration-500">
-                 <SheetHeader className="mb-12 text-left">
-                   <SheetTitle className="font-serif italic text-3xl font-light">Account.</SheetTitle>
-                   <SheetDescription className="text-gray-400 text-xs tracking-widest uppercase">
-                      Welcome back, {user?.name || 'Artisan'}
-                   </SheetDescription>
-                 </SheetHeader>
+                <SheetHeader className="mb-12 text-left">
+                  <SheetTitle className="font-serif italic text-3xl font-light">Account.</SheetTitle>
+                  <SheetDescription className="text-gray-400 text-xs tracking-widest uppercase">
+                    Welcome back, {user?.name || 'Artisan'}
+                  </SheetDescription>
+                </SheetHeader>
 
-                 <div className="flex-1 flex flex-col space-y-8">
-                    <Link onClick={() => setIsSheetOpen(false)} to="/dashboard" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Dashboard</Link>
-                    <Link onClick={() => setIsSheetOpen(false)} to="/profile" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Profile</Link>
+                <div className="flex-1 flex flex-col space-y-8">
+                  <Link onClick={() => setIsSheetOpen(false)} to={user?.role === 'admin' ? '/admin' : (user?.sellerRequestStatus === 'approved' ? '/dashboard' : '/account')} className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">
+                    {user?.role === 'admin' ? 'Admin Core' : (user?.sellerRequestStatus === 'approved' ? 'Dashboard' : 'My Account')}
+                  </Link>
+                  <Link onClick={() => setIsSheetOpen(false)} to="/profile" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Profile</Link>
+                  {user?.role !== 'admin' && (
                     <Link onClick={() => setIsSheetOpen(false)} to="/artisans/apply" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 opacity-50 cursor-pointer">Sell on Guild</Link>
-                 </div>
+                  )}
+                </div>
 
-                 <div className="mt-auto pt-8 border-t border-gray-100">
-                    <button onClick={handleLogout} className="text-xs uppercase tracking-[0.2em] font-bold text-black hover:text-red-500 transition-colors cursor-pointer">
-                       Log Out
-                    </button>
-                 </div>
+                <div className="mt-auto pt-8 border-t border-gray-100">
+                  <button onClick={handleLogout} className="text-xs uppercase tracking-[0.2em] font-bold text-black hover:text-red-500 transition-colors cursor-pointer">
+                    Log Out
+                  </button>
+                </div>
               </SheetContent>
             </Sheet>
           ) : (

@@ -41,7 +41,7 @@ const ArtisanSection = ({ artisan }) => {
                         </div>
                         
                         <p className="text-sm text-gray-500 font-light leading-loose max-w-xl">
-                            {artisan.bio || "Dedication to the craft defined by patience and respect for materials. Each piece is a dialogue between tradition and modern utility."}
+                            {artisan.bio || ""}
                         </p>
     
                         <Link to="/artisans" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest hover:underline underline-offset-4 decoration-1 transition-all mt-4 group">
