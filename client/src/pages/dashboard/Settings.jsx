@@ -4,10 +4,16 @@ import { motion } from 'framer-motion';
 import useAuthStore from '@/store/authStore';
 import Spinner from '@/components/ui/Spinner';
 import { Camera, User, MapPin, Briefcase, Mail, Phone, Globe, Pencil } from 'lucide-react';
+import authService from '@/api/services/authService';
+import { toast } from 'sonner';
 
 const Settings = () => {
-    const { user } = useAuthStore();
+    const { user, updateUser } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = React.useRef(null);
 
     // Initial State from User Store
     const [formData, setFormData] = useState({
@@ -35,7 +41,7 @@ const Settings = () => {
                     location: user.location || '',
                     telephone: user.telephone || '',
                     category: user.category || '',
-                    skills: user.skills ? user.skills.join(', ') : '',
+                    skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
                     experience: user.experience || '',
                     portfolio: user.portfolio || ''
                 });
@@ -44,6 +50,77 @@ const Settings = () => {
         }, 800);
         return () => clearTimeout(timer);
     }, [user]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const dataToSave = {
+                ...formData,
+                skills: formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(s => s !== '') : []
+            };
+            const response = await authService.updateDetails(dataToSave);
+            const updatedUser = response.data.data || response.data;
+            updateUser(updatedUser);
+            toast.success('Settings updated successfully');
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Failed to update settings');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validations
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            toast.error('Image size must be less than 5MB');
+            return;
+        }
+
+        setIsUploadingImage(true);
+        const formData = new FormData();
+        formData.append('profilePicture', file);
+
+        try {
+            const response = await authService.updateProfilePicture(formData);
+            const updatedUser = response.data.data || response.data;
+            updateUser(updatedUser);
+            toast.success('Profile picture updated');
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Failed to upload image');
+        } finally {
+            setIsUploadingImage(false);
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const event = { target: { files: [file] } };
+            handleImageUpload(event);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -59,8 +136,13 @@ const Settings = () => {
                  <div>
                      <h1 className="text-3xl font-light tracking-tight text-black">Settings</h1>
                 </div>
-                <button className="bg-black text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition-colors">
-                    Save Changes
+                <button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="bg-black text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                    {isSaving && <Spinner className="w-3 h-3" />}
+                    {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>
             </header>
             
@@ -70,19 +152,44 @@ const Settings = () => {
                     {/* Profile Picture Card */}
                     <div className="border border-gray-100 rounded-xl p-8 text-center space-y-4 bg-white">
                         <div className="relative w-32 h-32 mx-auto">
-                            <div className="w-full h-full rounded-full overflow-hidden bg-gray-100 group cursor-pointer relative">
-                                {user?.profilePicture ? (
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleImageUpload} 
+                                className="hidden" 
+                                accept="image/*" 
+                            />
+                            <div 
+                                onClick={() => !isUploadingImage && fileInputRef.current?.click()}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                className={`w-full h-full rounded-full overflow-hidden group cursor-pointer relative transition-all duration-300 ${
+                                    isDragging ? 'ring-4 ring-black ring-offset-4 scale-105 bg-gray-200' : 'bg-gray-100'
+                                }`}
+                            >
+                                {isUploadingImage ? (
+                                    <div className="w-full h-full flex items-center justify-center bg-black/5">
+                                        <Spinner className="w-8 h-8" />
+                                    </div>
+                                ) : user?.profilePicture ? (
                                     <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-300">
                                         <User className="w-12 h-12" />
                                     </div>
                                 )}
-                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Camera className="w-8 h-8 text-white" />
-                                </div>
+                                {!isUploadingImage && (
+                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Camera className="w-8 h-8 text-white" />
+                                    </div>
+                                )}
                             </div>
-                            <button className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md border border-gray-200 hover:bg-gray-50 transition-colors">
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploadingImage}
+                                className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
                                 <Pencil className="w-4 h-4 text-black" />
                             </button>
                         </div>

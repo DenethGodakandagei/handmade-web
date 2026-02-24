@@ -109,13 +109,15 @@ const ProductDetails = () => {
 
   // Derived Data
   const artisan = product.artisan || {
-    name: "Unknown Artisan",
-    image: "/images/placeholder-artisan.jpg",
-    location: product.location?.area || "Sri Lanka",
-    bio: "A master craftsman dedicated to preserving traditional techniques."
+     name: "Unknown Artisan",
+     image: "/images/placeholder-artisan.jpg",
+     location: product.location?.area || "Sri Lanka",
+     bio: "A master craftsman dedicated to preserving traditional techniques."
   };
 
   const stock = (product.stock || product.countInStock) > 0 ? (product.stock || product.countInStock) : 50;
+  const artisanId = location.state?.artisanId || (typeof product.artisan === 'object' ? product.artisan?._id : null);
+  const artisanName = location.state?.artisanName || (typeof product.artisan === 'object' ? product.artisan?.name : null);
 
   return (
     <div className="bg-white min-h-screen font-sans text-[#111] selection:bg-black selection:text-white pb-32">
@@ -126,24 +128,24 @@ const ProductDetails = () => {
         {/* Navbar Spacing */}
         <div className="h-32"></div>
 
-        {/* Breadcrumbs */}
-        <nav className="flex items-center space-x-2 text-[11px] font-medium uppercase text-gray-400 mb-12 tracking-normal">
-          <Link to="/" className="hover:text-black hover:opacity-70 transition-all">Home</Link>
-          <span className="text-gray-300">/</span>
-
-          {location.state?.from === 'cart' ? (
-            <button onClick={openCart} className="hover:text-black hover:opacity-70 transition-all uppercase">
-              Cart
-            </button>
-          ) : location.state?.from === 'checkout' ? (
-            <Link to="/checkout" className="hover:text-black hover:opacity-70 transition-all">Checkout</Link>
-          ) : (
-            <Link to="/collection" className="hover:text-black hover:opacity-70 transition-all">Collection</Link>
-          )}
-
-          <span className="text-gray-300">/</span>
-          <span className="text-black">{product.name}</span>
-        </nav>
+          {/* Breadcrumbs */}
+          <nav className="flex items-center space-x-2 text-[11px] font-medium uppercase text-gray-400 mb-12 tracking-normal">
+            <Link to="/" className="hover:text-black hover:opacity-70 transition-all">Home</Link>
+            <span className="text-gray-300">/</span>
+            
+            {location.state?.from === 'cart' ? (
+                <button onClick={openCart} className="hover:text-black hover:opacity-70 transition-all uppercase">
+                    Cart
+                </button>
+            ) : location.state?.from === 'checkout' ? (
+                <Link to="/checkout" className="hover:text-black hover:opacity-70 transition-all">Checkout</Link>
+            ) : (
+                <Link to="/collection" className="hover:text-black hover:opacity-70 transition-all">Collection</Link>
+            )}
+            
+            <span className="text-gray-300">/</span>
+            <span className="text-black">{product.name}</span>
+          </nav>
 
         {/* Main Product Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">

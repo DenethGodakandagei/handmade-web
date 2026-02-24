@@ -202,12 +202,18 @@ const CheckoutForm = () => {
 
       // 3️⃣ Payment successful — create the order in our database
       const orderData = {
-        orderItems: items.map(item => ({        // ← server expects `orderItems`
-          product: item.product._id,
-          name: item.product.name,
-          quantity: item.quantity,
-          price: item.product.price
-        })),
+        orderItems: items.map(item => {
+          const payload = {
+            product: item.product._id,
+            name: item.product.name,
+            quantity: item.quantity,
+            price: item.product.price,
+          };
+          if (item.product.customizationRequestId) {
+            payload.customizationRequest = item.product.customizationRequestId;
+          }
+          return payload;
+        }),
         totalAmount: total,
         shippingAddress: finalAddress,
         paymentMethod: 'Stripe',
