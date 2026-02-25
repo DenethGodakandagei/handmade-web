@@ -186,7 +186,7 @@ const ProductDetails = () => {
       <TechnicalDetails />
 
       {/* Artisan Section (Container Internal) */}
-      <ArtisanSection artisan={artisan} />
+      <ArtisanSection artisan={artisan} artisanId={artisanId} />
 
       {/* Full Width Marquee */}
       <MarqueeBanner />

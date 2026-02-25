@@ -3,12 +3,14 @@ import { motion } from 'framer-motion';
 import { MapPin, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const ArtisanSection = ({ artisan }) => {
+const ArtisanSection = ({ artisan, artisanId }) => {
     if (!artisan) return null;
 
     const artisanName = artisan.name || "Unknown Artisan";
     const artisanImage = artisan.profilePicture || artisan.image; 
     const artisanLocation = artisan.location || "Sri Lanka";
+    const resolvedArtisanId = artisanId || artisan?._id || artisan?.id || null;
+    const artisanProfilePath = resolvedArtisanId ? `/artisans/${resolvedArtisanId}` : '/artisans';
 
     return (
         <div className="container mx-auto px-6 md:px-12">
@@ -44,7 +46,7 @@ const ArtisanSection = ({ artisan }) => {
                             {artisan.bio || ""}
                         </p>
     
-                        <Link to="/artisans" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest hover:underline underline-offset-4 decoration-1 transition-all mt-4 group">
+                        <Link to={artisanProfilePath} className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest hover:underline underline-offset-4 decoration-1 transition-all mt-4 group">
                             View Artisan Profile <ArrowUpRight className="ml-1 w-3 h-3 text-gray-400 group-hover:text-black transition-colors" />
                         </Link>
                      </div>

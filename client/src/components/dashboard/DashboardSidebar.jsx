@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Store, Settings, LogOut, MessageSquare, Hammer, Activity, ShieldAlert, Database, BarChart3, Receipt, BoxSelect, SlidersHorizontal, History, Crosshair, Radio, Users, Terminal, Globe, Download, Eye, UserCheck, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Store, Settings, LogOut, MessageSquare, Hammer, Activity, ShieldAlert, Database, BarChart3, Receipt, BoxSelect, SlidersHorizontal, History, Crosshair, Radio, Users, Terminal, Globe, Download, Eye, UserCheck, Megaphone, HelpCircle } from 'lucide-react';
 import useAuthStore from '@/store/authStore';
 
 const NavItem = ({ item }) => (
@@ -46,6 +46,7 @@ const DashboardSidebar = () => {
             { icon: Package, label: 'Products', path: '/admin/products' },
             { icon: ShoppingBag, label: 'Orders', path: '/admin/orders' },
             { icon: Store, label: 'Users', path: '/admin/users' },
+            { icon: HelpCircle, label: 'FAQs', path: '/admin/faqs' },
         ],
         analytics: [
             { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
