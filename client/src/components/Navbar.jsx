@@ -93,7 +93,13 @@ const Navbar = () => {
         {/* Right Nav */}
         <div className="col-span-2 md:col-span-4 flex items-center justify-end space-x-6">
           {isAuthenticated ? (
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <Sheet
+              open={isSheetOpen}
+              onOpenChange={(open) => {
+                setIsSheetOpen(open);
+                window.dispatchEvent(new CustomEvent('profile-sheet', { detail: { open } }));
+              }}
+            >
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-auto p-0 hover:bg-transparent cursor-pointer">
                   <User className="w-5 h-5 text-black hover:opacity-50 transition-opacity" />
