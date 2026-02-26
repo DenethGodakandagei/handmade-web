@@ -19,10 +19,18 @@ const DataTable = ({
   onFavorite, 
   isLoading,
   searchPlaceholder = 'SEARCH RECORDS...',
-  showSearch = true
+  showSearch = true,
+  hideSearch = false,
+  showActionsColumn
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState(null);
+
+  const effectiveShowSearch = hideSearch ? false : showSearch;
+  const effectiveShowActionsColumn =
+    typeof showActionsColumn === 'boolean'
+      ? showActionsColumn
+      : Boolean(onFavorite || onEdit || onDelete);
 
   // Sorting & Filtering
   const filteredSortedData = React.useMemo(() => {
@@ -59,7 +67,7 @@ const DataTable = ({
   return (
     <div className="w-full bg-white border border-gray-100 overflow-hidden rounded-none">
       {/* Header / Toolbar */}
-      {showSearch && (
+      {effectiveShowSearch && (
         <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
@@ -92,14 +100,16 @@ const DataTable = ({
                   </div>
                 </TableHead>
               ))}
-              <TableHead className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-widest text-gray-400">Actions</TableHead>
+              {effectiveShowActionsColumn && (
+                <TableHead className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-widest text-gray-400">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <TableRow className="hover:bg-transparent border-gray-50">
-                  <TableCell colSpan={columns.length + 1} className="px-6 py-20 text-center">
+                  <TableCell colSpan={columns.length + (effectiveShowActionsColumn ? 1 : 0)} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin"></div>
                       <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Accessing Archives...</span>
@@ -108,7 +118,7 @@ const DataTable = ({
                 </TableRow>
               ) : filteredSortedData.length === 0 ? (
                 <TableRow className="hover:bg-transparent border-gray-50">
-                  <TableCell colSpan={columns.length + 1} className="px-6 py-20 text-center">
+                  <TableCell colSpan={columns.length + (effectiveShowActionsColumn ? 1 : 0)} className="px-6 py-20 text-center">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 italic">Historical data not found</span>
                   </TableCell>
                 </TableRow>
@@ -127,37 +137,39 @@ const DataTable = ({
                         {col.render ? col.render(row[col.key], row) : row[col.key]}
                       </TableCell>
                     ))}
-                    <TableCell className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-100 transition-all">
-                        {onFavorite && (
-                          <button 
-                            onClick={() => onFavorite(row)}
-                            className={`p-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer ${row.isFavorite ? 'text-red-500' : 'text-gray-300'}`}
-                          >
-                            <Heart size={14} fill={row.isFavorite ? "currentColor" : "none"} />
+                    {effectiveShowActionsColumn && (
+                      <TableCell className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-100 transition-all">
+                          {onFavorite && (
+                            <button 
+                              onClick={() => onFavorite(row)}
+                              className={`p-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer ${row.isFavorite ? 'text-red-500' : 'text-gray-300'}`}
+                            >
+                              <Heart size={14} fill={row.isFavorite ? "currentColor" : "none"} />
+                            </button>
+                          )}
+                          {onEdit && (
+                            <button 
+                              onClick={() => onEdit(row)}
+                              className="p-2 text-gray-400 hover:text-black hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button 
+                              onClick={() => onDelete(row)}
+                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                          <button className="p-2 text-gray-300 cursor-pointer">
+                            <MoreHorizontal size={14} />
                           </button>
-                        )}
-                        {onEdit && (
-                          <button 
-                            onClick={() => onEdit(row)}
-                            className="p-2 text-gray-400 hover:text-black hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer"
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                        )}
-                        {onDelete && (
-                          <button 
-                            onClick={() => onDelete(row)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                        <button className="p-2 text-gray-300 cursor-pointer">
-                           <MoreHorizontal size={14} />
-                        </button>
-                      </div>
-                    </TableCell>
+                        </div>
+                      </TableCell>
+                    )}
                   </motion.tr>
                 ))
               )}

@@ -65,11 +65,11 @@ const Products = () => {
             key: 'images',
             label: 'Image',
             render: (val) => (
-                <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
+                <div className="w-12 h-12 overflow-hidden border border-gray-100 rounded-lg bg-gray-50">
                     {val && val.length > 0 ? (
-                        <img src={val[0]} alt="" className="w-full h-full object-cover" />
+                        <img src={val[0]} alt="" className="object-cover w-full h-full" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <div className="flex items-center justify-center w-full h-full text-gray-300">
                             <span className="text-[8px]">NO IMG</span>
                         </div>
                     )}
@@ -81,7 +81,7 @@ const Products = () => {
             label: 'Product Name',
             render: (val, row) => (
                 <div>
-                    <p className="font-bold text-sm text-gray-900">{val}</p>
+                    <p className="text-sm font-bold text-gray-900">{val}</p>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{row.category?.name || 'Uncategorized'}</p>
                 </div>
             )
@@ -105,10 +105,10 @@ const Products = () => {
             label: 'Actions',
             render: (_, row) => (
                 <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-black" onClick={() => navigate(`/dashboard/products/edit/${row._id}`)}>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 text-gray-400 hover:text-black" onClick={() => navigate(`/dashboard/products/edit/${row._id}`)}>
                         <Edit size={14} />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500" onClick={() => handleDelete(row._id)}>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 text-gray-400 hover:text-red-500" onClick={() => handleDelete(row._id)}>
                         <Trash2 size={14} />
                     </Button>
                 </div>
@@ -125,25 +125,25 @@ const Products = () => {
     }
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 pb-20">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 pb-8">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-20 space-y-8">
+            <header className="flex flex-col justify-between gap-6 pb-8 border-b border-gray-100 md:flex-row md:items-center">
                 <div>
                     <h1 className="text-3xl font-light tracking-tight text-black">Product Collection</h1>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold mt-2">Manage your catalog and inventory</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                        <Search className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2" size={14} />
                         <Input
                             placeholder="Search products..."
-                            className="pl-9 w-56 h-10 bg-gray-50 border-gray-100 focus:bg-white transition-all rounded-lg text-sm"
+                            className="w-56 h-10 text-sm transition-all border-gray-100 rounded-lg pl-9 bg-gray-50 focus:bg-white"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                     <Button
                         onClick={() => navigate('/dashboard/products/add')}
-                        className="bg-black text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-gray-800 transition-colors rounded-none"
+                        className="px-6 py-3 text-xs font-bold tracking-widest text-white uppercase transition-colors bg-black rounded-none hover:bg-gray-800"
                     >
                         <Plus size={16} className="mr-2" />
                         New Creation
@@ -163,12 +163,12 @@ const Products = () => {
                 </div>
             ) : (
                 <div className="h-96 flex flex-col items-center justify-center border border-dashed border-gray-200 rounded-[2rem] space-y-4 bg-gray-50/50">
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+                    <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm">
                         <Search size={24} className="text-gray-300" />
                     </div>
                     <div className="text-center">
                         <h3 className="text-lg font-bold text-gray-900">No products found</h3>
-                        <p className="text-gray-400 text-xs uppercase tracking-widest mt-1">Try adjusting your search or add a new product</p>
+                        <p className="mt-1 text-xs tracking-widest text-gray-400 uppercase">Try adjusting your search or add a new product</p>
                     </div>
                 </div>
             )}

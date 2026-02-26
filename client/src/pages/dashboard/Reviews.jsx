@@ -188,7 +188,7 @@ const Reviews = () => {
             label: 'Review Title',
             render: (val, row) => (
                 <div>
-                    <p className="font-bold text-sm text-gray-900">{val}</p>
+                    <p className="text-sm font-bold text-gray-900">{val}</p>
                     <p className="text-[10px] text-gray-400 truncate max-w-[200px]">{row.text}</p>
                 </div>
             )
@@ -198,7 +198,7 @@ const Reviews = () => {
             label: 'Reviewer',
             render: (val) => (
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200">
                         <span className="text-[10px] font-black text-gray-500 uppercase">
                             {val?.name?.charAt(0) || '?'}
                         </span>
@@ -240,10 +240,10 @@ const Reviews = () => {
             label: 'Actions',
             render: (_, row) => (
                 <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-500" onClick={() => navigate(`/product/${row.product?._id || row.product}#reviews`)}>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 text-gray-400 hover:text-blue-500" onClick={() => navigate(`/product/${row.product?._id || row.product}#reviews`)}>
                         <Eye size={14} />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500" onClick={() => handleDelete(row)}>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 text-gray-400 hover:text-red-500" onClick={() => handleDelete(row)}>
                         <Trash2 size={14} />
                     </Button>
                 </div>
@@ -260,9 +260,9 @@ const Reviews = () => {
     }
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 pb-20">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pb-20 space-y-8">
             {/* Header */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 pb-8">
+            <header className="flex flex-col justify-between gap-6 pb-8 border-b border-gray-100 md:flex-row md:items-center">
                 <div>
                     <h1 className="text-3xl font-light tracking-tight text-black">Reviews & Ratings</h1>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold mt-2">Browse products and view all reviews</p>
@@ -270,7 +270,7 @@ const Reviews = () => {
             </header>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {[
                     { label: 'Total Products', value: allProducts.length, icon: Package, accent: 'bg-purple-50 text-purple-600' },
                     { label: 'Total Reviews', value: totalReviews, icon: MessageSquare, accent: 'bg-blue-50 text-blue-600' },
@@ -281,7 +281,7 @@ const Reviews = () => {
                         key={stat.label}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm"
+                        className="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl"
                     >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${stat.accent}`}>
                             <stat.icon size={18} />
@@ -293,7 +293,7 @@ const Reviews = () => {
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl w-fit">
                 <button
                     onClick={() => setActiveTab('products')}
                     className={`px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all ${activeTab === 'products'
@@ -320,12 +320,12 @@ const Reviews = () => {
             {activeTab === 'products' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                     {/* Product Search */}
-                    <div className="flex items-center space-x-4 bg-white p-4 rounded-2xl border border-gray-50 shadow-sm">
+                    <div className="flex items-center p-4 space-x-4 bg-white border shadow-sm rounded-2xl border-gray-50">
                         <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <Search className="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2" size={16} />
                             <Input
                                 placeholder="Search products to review..."
-                                className="pl-11 bg-gray-50 border-transparent focus:bg-white transition-all rounded-xl"
+                                className="transition-all border-transparent pl-11 bg-gray-50 focus:bg-white rounded-xl"
                                 value={productSearch}
                                 onChange={(e) => setProductSearch(e.target.value)}
                             />
@@ -335,98 +335,104 @@ const Reviews = () => {
                         </Badge>
                     </div>
 
-                    {/* Product Grid */}
+                    {/* Product List (Row-wise) */}
                     {filteredProducts.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                            {filteredProducts.map((product, idx) => {
-                                const reviewCount = getProductReviewCount(product._id);
-                                const avgRat = getProductAvgRating(product._id);
-                                return (
-                                    <motion.div
-                                        key={product._id}
-                                        initial={{ opacity: 0, y: 15 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: idx * 0.03 }}
-                                        className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all duration-300 overflow-hidden"
-                                    >
-                                        {/* Product Image */}
-                                        <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                                            {product.images && product.images.length > 0 ? (
-                                                <img
-                                                    src={product.images[0]}
-                                                    alt={product.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <Package size={40} className="text-gray-200" />
+                        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-black/5 overflow-hidden">
+                            {/* Column headers (desktop) */}
+                            <div className="hidden md:grid grid-cols-[1.6fr_0.9fr_0.6fr_0.6fr_0.5fr] px-6 py-4 bg-gray-50/50 border-b border-gray-100">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Product</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Rating</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Reviews</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Price</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 text-right">Action</span>
+                            </div>
+
+                            <div className="divide-y divide-gray-100">
+                                {filteredProducts.map((product, idx) => {
+                                    const reviewCount = getProductReviewCount(product._id);
+                                    const avgRat = getProductAvgRating(product._id);
+                                    const priceNumber = Number(product.price);
+
+                                    return (
+                                        <motion.div
+                                            key={product._id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: idx * 0.02 }}
+                                            className="px-6 py-4 transition-colors hover:bg-gray-50/50"
+                                        >
+                                            <div className="flex flex-col md:grid md:grid-cols-[1.6fr_0.9fr_0.6fr_0.6fr_0.5fr] gap-4 md:items-center">
+                                                {/* Product */}
+                                                <div className="flex items-center min-w-0 gap-4">
+                                                    <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 overflow-hidden border border-gray-100 rounded-xl bg-gray-50">
+                                                        {product.images && product.images.length > 0 ? (
+                                                            <img
+                                                                src={product.images[0]}
+                                                                alt={product.name}
+                                                                className="object-cover w-full h-full"
+                                                            />
+                                                        ) : (
+                                                            <Package size={20} className="text-gray-200" />
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-bold text-gray-900 truncate">{product.name}</p>
+                                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5 truncate">
+                                                            {product.category?.name || 'Uncategorized'}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            )}
 
-                                            {/* Rating overlay */}
-                                            {reviewCount > 0 && (
-                                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 shadow-sm">
-                                                    <Star size={12} className="fill-amber-400 text-amber-400" />
-                                                    <span className="text-xs font-bold text-gray-900">{avgRat}</span>
+                                                {/* Rating */}
+                                                <div className="flex items-center justify-between gap-3 md:justify-start">
+                                                    <div className="flex items-center gap-2">
+                                                        <StarDisplay rating={Math.round(parseFloat(avgRat) || 0)} size={12} />
+                                                        <span className="text-[10px] font-bold text-gray-400">{avgRat}</span>
+                                                    </div>
+                                                    <span className="md:hidden text-[10px] font-bold uppercase tracking-widest text-gray-400">Rating</span>
                                                 </div>
-                                            )}
 
-                                            {/* Review count badge */}
-                                            <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm">
-                                                <span className="text-[9px] font-bold text-white uppercase tracking-wider">
-                                                    {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
-                                                </span>
+                                                {/* Reviews */}
+                                                <div className="flex items-center justify-between md:block">
+                                                    <span className="text-xs font-semibold text-gray-900">{reviewCount}</span>
+                                                    <span className="md:hidden text-[10px] font-bold uppercase tracking-widest text-gray-400">Reviews</span>
+                                                </div>
+
+                                                {/* Price */}
+                                                <div className="flex items-center justify-between md:block">
+                                                    <span className="text-xs font-semibold text-gray-900">
+                                                        {Number.isFinite(priceNumber) ? `$${priceNumber.toFixed(2)}` : '—'}
+                                                    </span>
+                                                    <span className="md:hidden text-[10px] font-bold uppercase tracking-widest text-gray-400">Price</span>
+                                                </div>
+
+                                                {/* Action */}
+                                                <div className="flex md:justify-end">
+                                                    <Button
+                                                        onClick={() => {
+                                                            setSelectedProduct(product);
+                                                            setIsReviewModalOpen(true);
+                                                        }}
+                                                        className="bg-black text-white hover:bg-gray-800 text-[9px] uppercase tracking-widest font-bold h-9 rounded-lg px-4"
+                                                    >
+                                                        <Eye size={12} className="mr-1.5" />
+                                                        View
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        {/* Product Info */}
-                                        <div className="p-4 space-y-3">
-                                            <div>
-                                                <h3 className="font-bold text-sm text-gray-900 truncate">{product.name}</h3>
-                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">
-                                                    {product.category?.name || 'Uncategorized'}
-                                                </p>
-                                            </div>
-
-                                            {/* Star display */}
-                                            <div className="flex items-center gap-2">
-                                                <StarDisplay rating={Math.round(parseFloat(avgRat) || 0)} size={13} />
-                                                {reviewCount > 0 && (
-                                                    <span className="text-[10px] text-gray-400">({reviewCount})</span>
-                                                )}
-                                            </div>
-
-                                            {/* Price */}
-                                            {product.price && (
-                                                <p className="text-sm font-semibold text-gray-800">${product.price.toFixed(2)}</p>
-                                            )}
-
-                                            {/* Action Buttons */}
-                                            <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
-                                                <Button
-                                                    onClick={() => {
-                                                        setSelectedProduct(product);
-                                                        setIsReviewModalOpen(true);
-                                                    }}
-                                                    className="flex-1 bg-black text-white hover:bg-gray-800 text-[9px] uppercase tracking-widest font-bold h-9 rounded-lg"
-                                                >
-                                                    <Eye size={12} className="mr-1.5" />
-                                                    View
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     ) : (
                         <div className="h-96 flex flex-col items-center justify-center border border-dashed border-gray-200 rounded-[2rem] space-y-4 bg-gray-50/50">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm">
                                 <Package size={24} className="text-gray-300" />
                             </div>
                             <div className="text-center">
                                 <h3 className="text-lg font-bold text-gray-900">No products found</h3>
-                                <p className="text-gray-400 text-xs uppercase tracking-widest mt-1">Try adjusting your search</p>
+                                <p className="mt-1 text-xs tracking-widest text-gray-400 uppercase">Try adjusting your search</p>
                             </div>
                         </div>
                     )}
@@ -437,12 +443,12 @@ const Reviews = () => {
             {activeTab === 'reviews' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                     {/* Review Filters */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 bg-white p-4 rounded-2xl border border-gray-50 shadow-sm">
+                    <div className="flex flex-col items-stretch p-4 space-y-4 bg-white border shadow-sm sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 rounded-2xl border-gray-50">
                         <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <Search className="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2" size={16} />
                             <Input
                                 placeholder="Search reviews..."
-                                className="pl-11 bg-gray-50 border-transparent focus:bg-white transition-all rounded-xl"
+                                className="transition-all border-transparent pl-11 bg-gray-50 focus:bg-white rounded-xl"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -472,16 +478,17 @@ const Reviews = () => {
                                 data={filteredReviews}
                                 isLoading={isLoading}
                                 hideSearch
+                                showActionsColumn={false}
                             />
                         </div>
                     ) : (
                         <div className="h-96 flex flex-col items-center justify-center border border-dashed border-gray-200 rounded-[2rem] space-y-4 bg-gray-50/50">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm">
                                 <MessageSquare size={24} className="text-gray-300" />
                             </div>
                             <div className="text-center">
                                 <h3 className="text-lg font-bold text-gray-900">No reviews found</h3>
-                                <p className="text-gray-400 text-xs uppercase tracking-widest mt-1">
+                                <p className="mt-1 text-xs tracking-widest text-gray-400 uppercase">
                                     {searchQuery || filterRating ? 'Try adjusting your filters' : 'Add a review from the Products tab'}
                                 </p>
                             </div>
@@ -500,22 +507,22 @@ const Reviews = () => {
                         </DialogDescription>
                     </DialogHeader>
                     {selectedProduct && (
-                        <div className="space-y-4 mt-4">
+                        <div className="mt-4 space-y-4">
                             {(() => {
                                 const productReviews = reviews.filter(r => (r.product?._id || r.product) === selectedProduct._id);
                                 if (productReviews.length === 0) {
                                     return (
-                                        <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                        <div className="py-12 text-center text-gray-500 border border-gray-200 border-dashed bg-gray-50 rounded-xl">
                                             No reviews found for this product.
                                         </div>
                                     );
                                 }
                                 return productReviews.map(review => (
-                                    <div key={review._id} className="flex flex-col sm:flex-row gap-4 justify-between items-start p-5 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="space-y-3 flex-1 w-full">
-                                            <div className="flex items-center justify-between sm:justify-start gap-4">
+                                    <div key={review._id} className="flex flex-col items-start justify-between gap-4 p-5 transition-shadow bg-white border border-gray-100 shadow-sm sm:flex-row rounded-2xl hover:shadow-md">
+                                        <div className="flex-1 w-full space-y-3">
+                                            <div className="flex items-center justify-between gap-4 sm:justify-start">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                                                    <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 border border-blue-100 rounded-full bg-gradient-to-br from-indigo-50 to-blue-50">
                                                         <span className="text-sm font-black text-blue-600 uppercase">
                                                             {review.user?.name?.charAt(0) || '?'}
                                                         </span>
@@ -536,18 +543,18 @@ const Reviews = () => {
                                                     </div>
                                                 </div>
                                                 <div className="sm:hidden">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(review)}>
+                                                    <Button variant="ghost" size="icon" className="w-8 h-8 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(review)}>
                                                         <Trash2 size={16} />
                                                     </Button>
                                                 </div>
                                             </div>
                                             <div className="pl-0 sm:pl-14">
-                                                <h4 className="font-bold text-sm text-gray-900 mb-1">{review.title}</h4>
-                                                <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100">{review.text}</p>
+                                                <h4 className="mb-1 text-sm font-bold text-gray-900">{review.title}</h4>
+                                                <p className="p-3 text-sm leading-relaxed text-gray-600 border border-gray-100 bg-gray-50 rounded-xl">{review.text}</p>
                                             </div>
                                         </div>
                                         <div className="hidden sm:block">
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-red-400 hover:text-red-600 hover:bg-red-50 bg-white border border-gray-100 shadow-sm" onClick={() => handleDelete(review)}>
+                                            <Button variant="ghost" size="icon" className="text-red-400 bg-white border border-gray-100 shadow-sm h-9 w-9 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(review)}>
                                                 <Trash2 size={16} />
                                             </Button>
                                         </div>
