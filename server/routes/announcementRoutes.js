@@ -13,6 +13,10 @@ const router = express.Router();
  */
 router.get('/active', async (req, res, next) => {
   try {
+    res.set('Cache-Control', 'no-store');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     // Try to get user role from token (optional auth)
     let userRole = null;
     const authHeader = req.headers.authorization;
@@ -35,7 +39,7 @@ router.get('/active', async (req, res, next) => {
       active: true,
       audience: { $in: audienceFilter }
     })
-      .select('title body audience priority createdAt')
+      .select('title body audience priority createdAt updatedAt visibilityVersion')
       .sort({ createdAt: -1 })
       .limit(5)
       .lean();
