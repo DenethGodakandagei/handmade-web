@@ -14,6 +14,7 @@ import {
   verifyArtisan,
   getAnnouncements,
   createAnnouncement,
+  updateAnnouncement,
   toggleAnnouncement,
   deleteAnnouncement
 } from '../controllers/adminExtendedController.js';
@@ -52,6 +53,7 @@ router.put('/verification/:id', verifyArtisan);
 router.route('/announcements')
   .get(getAnnouncements)
   .post(createAnnouncement);
+router.put('/announcements/:id', updateAnnouncement);
 router.put('/announcements/:id/toggle', toggleAnnouncement);
 router.delete('/announcements/:id', deleteAnnouncement);
 

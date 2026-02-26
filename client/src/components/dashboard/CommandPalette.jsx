@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, User, Package, ShoppingBag, ArrowRight, Command, LayoutDashboard, BarChart3, ShieldAlert, Settings, X } from 'lucide-react';
+import { Search, User, Package, ShoppingBag, ArrowRight, Command, LayoutDashboard, BarChart3, ShieldAlert, Settings, X, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/axiosClient';
 
@@ -21,6 +21,7 @@ const PAGES = [
   { label: 'Moderation', path: '/admin/moderation', icon: ShieldAlert, group: 'Navigate' },
   { label: 'Verification', path: '/admin/verification', icon: User, group: 'Navigate' },
   { label: 'Broadcasts', path: '/admin/broadcast', icon: Settings, group: 'Navigate' },
+  { label: 'FAQs', path: '/admin/faqs', icon: HelpCircle, group: 'Navigate' },
   { label: 'Exports', path: '/admin/exports', icon: Package, group: 'Navigate' },
   { label: 'Geo Map', path: '/admin/geo', icon: BarChart3, group: 'Navigate' },
 ];
@@ -28,7 +29,7 @@ const PAGES = [
 const CommandPalette = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState({ pages: [], users: [], products: [], orders: [] });
+  const [results, setResults] = useState({ pages: [], users: [], products: [], orders: [], faqs: [] });
   const [selected, setSelected] = useState(0);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
@@ -52,7 +53,7 @@ const CommandPalette = () => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
       setQuery('');
-      setResults({ pages: [], users: [], products: [], orders: [] });
+      setResults({ pages: [], users: [], products: [], orders: [], faqs: [] });
       setSelected(0);
     }
   }, [open]);
@@ -62,7 +63,7 @@ const CommandPalette = () => {
     if (!query.trim()) {
       // Show page navigation when no query
       const filtered = PAGES.filter(p => true);
-      setResults({ pages: filtered, users: [], products: [], orders: [] });
+      setResults({ pages: filtered, users: [], products: [], orders: [], faqs: [] });
       setSelected(0);
       return;
     }
@@ -81,15 +82,16 @@ const CommandPalette = () => {
             pages: filteredPages,
             users: res.data?.users || [],
             products: res.data?.products || [],
-            orders: res.data?.orders || []
+            orders: res.data?.orders || [],
+            faqs: res.data?.faqs || []
           });
         } catch {
-          setResults({ pages: filteredPages, users: [], products: [], orders: [] });
+          setResults({ pages: filteredPages, users: [], products: [], orders: [], faqs: [] });
         } finally {
           setLoading(false);
         }
       } else {
-        setResults({ pages: filteredPages, users: [], products: [], orders: [] });
+        setResults({ pages: filteredPages, users: [], products: [], orders: [], faqs: [] });
       }
       setSelected(0);
     }, 200);
@@ -103,6 +105,7 @@ const CommandPalette = () => {
     ...results.users.map(u => ({ type: 'user', label: u.name, sub: u.email, path: `/admin/users`, id: u._id })),
     ...results.products.map(p => ({ type: 'product', label: p.name, sub: `$${p.price} · ${p.stock} in stock`, path: `/admin/products`, id: p._id })),
     ...results.orders.map(o => ({ type: 'order', label: `Order #${String(o._id).slice(-6)}`, sub: `$${o.totalAmount} · ${o.status}`, path: `/admin/orders`, id: o._id })),
+    ...results.faqs.map(f => ({ type: 'faq', label: f.question, sub: f.answer, path: `/admin/faqs`, id: f._id })),
   ];
 
   const handleKeyDown = (e) => {
@@ -156,7 +159,7 @@ const CommandPalette = () => {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search users, products, orders, or navigate..."
+              placeholder="Search users, products, orders, FAQs, or navigate..."
               className="flex-1 text-sm outline-none placeholder:text-gray-300 bg-transparent"
             />
             <kbd className="hidden sm:flex items-center gap-0.5 text-[9px] text-gray-300 bg-gray-50 border border-gray-100 px-1.5 py-0.5 font-mono">ESC</kbd>
@@ -252,6 +255,29 @@ const CommandPalette = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">#{String(order._id).slice(-6)}</p>
                         <p className={`text-[10px] ${selected === idx ? 'text-white/60' : 'text-gray-400'}`}>${order.totalAmount} · {order.status}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* FAQs */}
+            {results.faqs.length > 0 && (
+              <div>
+                <div className="px-5 pt-3 pb-1.5 text-[9px] uppercase tracking-[0.2em] font-bold text-gray-300">FAQs</div>
+                {results.faqs.map((faq, i) => {
+                  const idx = results.pages.slice(0, 8).length + results.users.length + results.products.length + results.orders.length + i;
+                  return (
+                    <button
+                      key={faq._id}
+                      onClick={() => handleSelect({ path: '/admin/faqs' })}
+                      className={`w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors ${selected === idx ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                    >
+                      <HelpCircle className={`w-3.5 h-3.5 flex-shrink-0 ${selected === idx ? 'text-white' : 'text-gray-300'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{faq.question}</p>
+                        <p className={`text-[10px] truncate ${selected === idx ? 'text-white/60' : 'text-gray-400'}`}>{faq.answer}</p>
                       </div>
                     </button>
                   );

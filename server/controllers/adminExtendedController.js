@@ -2,6 +2,7 @@ import Order from '../models/OrderModel.js';
 import User from '../models/UserModel.js';
 import Product from '../models/ProductModel.js';
 import Review from '../models/ReviewModel.js';
+import Faq from '../models/faqModel.js';
 import AdminNotification from '../models/AdminNotificationModel.js';
 import Announcement from '../models/AnnouncementModel.js';
 import { sendSuccess, ErrorResponse } from '../utils/responseUtils.js';
@@ -14,12 +15,12 @@ export const globalSearch = async (req, res, next) => {
   try {
     const q = req.query.q?.trim();
     if (!q || q.length < 2) {
-      return sendSuccess(res, 200, 'Search', { users: [], products: [], orders: [] });
+      return sendSuccess(res, 200, 'Search', { users: [], products: [], orders: [], faqs: [] });
     }
 
     const regex = new RegExp(q, 'i');
 
-    const [users, products, orders] = await Promise.all([
+    const [users, products, orders, faqs] = await Promise.all([
       User.find({ $or: [{ name: regex }, { email: regex }, { studioName: regex }] })
         .select('name email role profilePicture studioName sellerRequestStatus')
         .limit(8)
@@ -36,10 +37,17 @@ export const globalSearch = async (req, res, next) => {
             .populate('user', 'name')
             .limit(5)
             .lean()
-        : []
+        : [],
+      Faq.find({
+        $or: [{ question: regex }, { answer: regex }]
+      })
+        .select('question answer status published updatedAt')
+        .sort({ updatedAt: -1 })
+        .limit(8)
+        .lean()
     ]);
 
-    sendSuccess(res, 200, 'Search Results', { users, products, orders });
+    sendSuccess(res, 200, 'Search Results', { users, products, orders, faqs });
   } catch (error) {
     next(error);
   }
@@ -482,12 +490,45 @@ export const verifyArtisan = async (req, res, next) => {
 
 export const getAnnouncements = async (req, res, next) => {
   try {
-    const announcements = await Announcement.find()
-      .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 })
-      .lean();
+    res.set('Cache-Control', 'no-store');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
 
-    sendSuccess(res, 200, 'Announcements', { announcements, total: announcements.length });
+    const { q, status = 'all', audience = 'all', priority = 'all', date = 'newest' } = req.query;
+
+    const filters = {};
+
+    if (status === 'active') filters.active = true;
+    if (status === 'inactive') filters.active = false;
+    if (audience && audience !== 'all') filters.audience = audience;
+    if (priority && priority !== 'all') filters.priority = priority;
+
+    if (q?.trim()) {
+      const regex = new RegExp(q.trim(), 'i');
+      filters.$or = [{ title: regex }, { body: regex }];
+    }
+
+    const sortOrder = date === 'oldest' ? 1 : -1;
+
+    const [announcements, totalCount, activeCount, inactiveCount] = await Promise.all([
+      Announcement.find(filters)
+        .populate('createdBy', 'name email')
+        .sort({ updatedAt: sortOrder })
+        .lean(),
+      Announcement.countDocuments(),
+      Announcement.countDocuments({ active: true }),
+      Announcement.countDocuments({ active: false })
+    ]);
+
+    sendSuccess(res, 200, 'Announcements', {
+      announcements,
+      total: announcements.length,
+      registry: {
+        total: totalCount,
+        active: activeCount,
+        inactive: inactiveCount
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -495,11 +536,18 @@ export const getAnnouncements = async (req, res, next) => {
 
 export const createAnnouncement = async (req, res, next) => {
   try {
-    const { title, body, audience, priority } = req.body;
+    const title = req.body.title?.trim();
+    const body = req.body.body?.trim();
+    const audience = req.body.audience || 'all';
+    const priority = req.body.priority || 'normal';
+
     if (!title || !body) return next(new ErrorResponse('Title and body are required', 400));
+    if (!['all', 'buyers', 'artisans'].includes(audience)) return next(new ErrorResponse('Invalid audience', 400));
+    if (!['low', 'normal', 'urgent'].includes(priority)) return next(new ErrorResponse('Invalid priority', 400));
 
     const announcement = await Announcement.create({
       title, body, audience, priority,
+      visibilityVersion: 1,
       createdBy: req.user.id
     });
 
@@ -524,12 +572,102 @@ export const createAnnouncement = async (req, res, next) => {
   }
 };
 
+export const updateAnnouncement = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new ErrorResponse('Announcement not found', 404));
+    }
+
+    const ann = await Announcement.findById(id);
+    if (!ann) return next(new ErrorResponse('Announcement not found', 404));
+
+    const updates = {};
+
+    if (typeof req.body.title === 'string') {
+      const title = req.body.title.trim();
+      if (!title) return next(new ErrorResponse('Title is required', 400));
+      updates.title = title;
+    }
+
+    if (typeof req.body.body === 'string') {
+      const body = req.body.body.trim();
+      if (!body) return next(new ErrorResponse('Body is required', 400));
+      updates.body = body;
+    }
+
+    if (typeof req.body.audience === 'string') {
+      if (!['all', 'buyers', 'artisans'].includes(req.body.audience)) {
+        return next(new ErrorResponse('Invalid audience', 400));
+      }
+      updates.audience = req.body.audience;
+    }
+
+    if (typeof req.body.priority === 'string') {
+      if (!['low', 'normal', 'urgent'].includes(req.body.priority)) {
+        return next(new ErrorResponse('Invalid priority', 400));
+      }
+      updates.priority = req.body.priority;
+    }
+
+    const hasActiveUpdate = typeof req.body.active === 'boolean';
+    if (hasActiveUpdate) {
+      updates.active = req.body.active;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return next(new ErrorResponse('No valid fields to update', 400));
+    }
+
+    const visibilityChanged = hasActiveUpdate && ann.active !== updates.active;
+
+    Object.assign(ann, updates);
+    if (visibilityChanged) {
+      ann.visibilityVersion = (ann.visibilityVersion || 1) + 1;
+    }
+    await ann.save();
+
+    let targetQuery = {};
+    if (ann.audience === 'buyers') targetQuery = { role: 'user' };
+    else if (ann.audience === 'artisans') targetQuery = { role: 'artisan' };
+    const affectedCount = await User.countDocuments(targetQuery);
+
+    await recordAudit({
+      actor: req.user.id,
+      action: 'BROADCAST_UPDATE',
+      target: ann._id,
+      targetModel: 'Announcement',
+      description: `Updated broadcast "${ann.title}"`,
+      metadata: { updates, affectedCount, visibilityVersion: ann.visibilityVersion },
+      req,
+      severity: ann.priority === 'urgent' ? 'high' : 'medium'
+    });
+
+    sendSuccess(res, 200, 'Announcement updated', { announcement: ann, affectedCount });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const toggleAnnouncement = async (req, res, next) => {
   try {
     const ann = await Announcement.findById(req.params.id);
     if (!ann) return next(new ErrorResponse('Announcement not found', 404));
     ann.active = !ann.active;
+    ann.visibilityVersion = (ann.visibilityVersion || 1) + 1;
     await ann.save();
+
+    await recordAudit({
+      actor: req.user.id,
+      action: 'BROADCAST_TOGGLE',
+      target: ann._id,
+      targetModel: 'Announcement',
+      description: `${ann.active ? 'Activated' : 'Deactivated'} broadcast "${ann.title}"`,
+      metadata: { active: ann.active, visibilityVersion: ann.visibilityVersion },
+      req,
+      severity: 'low'
+    });
+
     sendSuccess(res, 200, `Announcement ${ann.active ? 'activated' : 'deactivated'}`, ann);
   } catch (error) {
     next(error);
@@ -540,6 +678,18 @@ export const deleteAnnouncement = async (req, res, next) => {
   try {
     const ann = await Announcement.findByIdAndDelete(req.params.id);
     if (!ann) return next(new ErrorResponse('Announcement not found', 404));
+
+    await recordAudit({
+      actor: req.user.id,
+      action: 'BROADCAST_DELETE',
+      target: ann._id,
+      targetModel: 'Announcement',
+      description: `Deleted broadcast "${ann.title}"`,
+      metadata: { title: ann.title, audience: ann.audience, priority: ann.priority },
+      req,
+      severity: 'high'
+    });
+
     sendSuccess(res, 200, 'Announcement deleted');
   } catch (error) {
     next(error);

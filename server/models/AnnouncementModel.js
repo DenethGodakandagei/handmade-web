@@ -24,17 +24,21 @@ const AnnouncementSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  visibilityVersion: {
+    type: Number,
+    default: 1
+  },
   createdBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
+}, {
+  timestamps: true
 });
 
 AnnouncementSchema.index({ active: 1, createdAt: -1 });
+AnnouncementSchema.index({ audience: 1, priority: 1, active: 1, createdAt: -1 });
+AnnouncementSchema.index({ title: 'text', body: 'text' });
 
 export default mongoose.model('Announcement', AnnouncementSchema);
