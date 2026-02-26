@@ -47,6 +47,7 @@ import AdminModeration from './pages/admin/AdminModeration';
 import AdminVerification from './pages/admin/AdminVerification';
 import AdminBroadcast from './pages/admin/AdminBroadcast';
 import AdminUserProfile from './pages/admin/AdminUserProfile';
+import AdminFaqs from './pages/admin/AdminFaqs';
 import UserDashboard from './pages/UserDashboard';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
@@ -188,6 +189,7 @@ function App() {
           <Route path="moderation" element={<AdminModeration />} />
           <Route path="verification" element={<AdminVerification />} />
           <Route path="broadcast" element={<AdminBroadcast />} />
+          <Route path="faqs" element={<AdminFaqs />} />
           <Route path="users/:id" element={<AdminUserProfile />} />
         </Route>
 

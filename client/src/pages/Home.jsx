@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ArrowRight, ArrowUpRight, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProductCard from '@/components/ProductCard';
 import productService from '@/api/services/productService';
 import { Button } from '@/components/ui/button';
+import faqService from '@/api/services/faqService';
+import useCartStore from '@/store/cartStore';
 
 const Home = () => {
    const [products, setProducts] = useState([]);
+   const [faqs, setFaqs] = useState([]);
+   const [activeFaq, setActiveFaq] = useState(null);
    const { scrollYProgress } = useScroll();
    const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
+   const isCartOpen = useCartStore((state) => state.isCartOpen);
 
    useEffect(() => {
       const fetchProducts = async () => {
@@ -26,6 +32,51 @@ const Home = () => {
 
       fetchProducts();
    }, []);
+
+   useEffect(() => {
+      const fetchFaqs = async () => {
+         try {
+            const res = await faqService.getPublished();
+            const faqList = res.data?.faqs || [];
+            setFaqs(faqList);
+         } catch (error) {
+            console.error("Failed to fetch FAQs for home page", error);
+         }
+      };
+
+      fetchFaqs();
+   }, []);
+
+   useEffect(() => {
+      if (isCartOpen) {
+         setActiveFaq(null);
+      }
+   }, [isCartOpen]);
+
+   useEffect(() => {
+      const handleProfileSheet = (event) => {
+         if (event?.detail?.open) {
+            setActiveFaq(null);
+         }
+      };
+      window.addEventListener('profile-sheet', handleProfileSheet);
+      return () => window.removeEventListener('profile-sheet', handleProfileSheet);
+   }, []);
+
+   const toggleFaq = (id) => {
+      setActiveFaq((prev) => (prev === id ? null : id));
+   };
+
+   const faqOverlay = (
+      <motion.div
+         className="fixed inset-0 bg-black/80 z-[60]"
+         onClick={() => setActiveFaq(null)}
+         initial={false}
+         animate={{ opacity: activeFaq ? 1 : 0 }}
+         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+         style={{ pointerEvents: activeFaq ? 'auto' : 'none' }}
+      />
+   );
 
    return (
       <div className="bg-white min-h-screen font-sans text-[#111] selection:bg-black selection:text-white">
@@ -164,8 +215,86 @@ const Home = () => {
             </motion.div>
          </section>
 
+         {/* FAQ Section */}
+         <section className="py-24 px-6 md:px-12 border-t border-gray-100 bg-gradient-to-b from-white via-white to-gray-50/70 relative">
+            {typeof document !== 'undefined' && createPortal(faqOverlay, document.body)}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
+               <div>
+                  <span className="text-xs font-medium uppercase tracking-[0.05em] text-gray-400">FAQ</span>
+                  <h2 className="text-4xl md:text-5xl tracking-tight leading-[1.05] font-light mt-4 max-w-2xl">
+                     Answers that reveal the craft behind every object.
+                  </h2>
+               </div>
+               <p className="text-sm text-gray-500 max-w-sm">
+                  Each question carries its answer behind the fold.
+               </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+               {faqs.length === 0 ? (
+                  <div className="col-span-full border border-dashed border-gray-200 rounded-3xl p-12 text-center text-sm text-gray-400">
+                     No FAQs are published yet.
+                  </div>
+               ) : (
+                  faqs.map((faq) => {
+                     const isActive = activeFaq === faq._id;
+                     return (
+                        <button
+                           key={faq._id}
+                           onClick={() => toggleFaq(faq._id)}
+                           className={`text-left group relative ${isActive ? 'z-[70]' : 'z-10'}`}
+                        >
+                           <div className="relative w-full [perspective:1400px]">
+                              <motion.div
+                                 className="relative w-full h-26 rounded-[1.5rem] bg-white border border-gray-100 shadow-xl shadow-black/10"
+                                 style={{ transformStyle: 'preserve-3d', transformOrigin: 'center center' }}
+                                 animate={{
+                                    rotateX: isActive ? 180 : 0,
+                                    y: isActive ? -6 : 0,
+                                    boxShadow: isActive
+                                       ? '0 18px 40px -28px rgba(0,0,0,0.22)'
+                                       : '0 12px 28px -24px rgba(0,0,0,0.12)'
+                                 }}
+                                 transition={{
+                                    rotateX: { type: 'spring', stiffness: 110, damping: 22 },
+                                    y: { type: 'spring', stiffness: 110, damping: 22 },
+                                    boxShadow: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+                                 }}
+                              >
+                              <div
+                                 className="absolute inset-0 flex flex-col justify-center p-6"
+                                 style={{ backfaceVisibility: 'hidden' }}
+                              >
+                                 <Plus
+                                    size={18}
+                                    className="text-gray-300 group-hover:text-black transition-colors absolute right-5 top-1/2 -translate-y-1/2 cursor-pointer"
+                                 />
+                                 <h3 className="text-[14px] font-medium tracking-tight text-gray-700 leading-snug pr-10">
+                                    {faq.question}
+                                 </h3>
+                              </div>
+
+                              <div
+                                 className="absolute inset-0 flex flex-col justify-center p-6 bg-white rounded-[1.5rem]"
+                                 style={{ transform: 'rotateX(180deg)', backfaceVisibility: 'hidden' }}
+                              >
+                                 <Plus
+                                    size={18}
+                                    className="text-black rotate-45 absolute right-5 top-1/2 -translate-y-1/2 cursor-pointer"
+                                 />
+                                 <p className="text-[14px] text-gray-700 leading-relaxed pr-10">{faq.answer}</p>
+                              </div>
+                              </motion.div>
+                           </div>
+                        </button>
+                     );
+                  })
+               )}
+            </div>
+         </section>
+
          {/* Minimal Footer Area */}
-         <section className="py-24 px-6 md:px-12 bg-gray-50 mt-20">
+         <section className="py-24 px-6 md:px-12 bg-gray-50 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
                <h2 className="text-4xl md:text-5xl tracking-tight max-w-md">
                   Join our list for early access.

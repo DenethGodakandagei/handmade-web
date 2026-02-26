@@ -179,7 +179,7 @@ const ProductDetails = () => {
       <TechnicalDetails />
 
       {/* Artisan Section (Container Internal) */}
-      <ArtisanSection artisan={artisan} />
+      <ArtisanSection artisan={artisan} artisanId={artisanId} />
 
       {/* Customer Reviews */}
       <ReviewSection productId={product._id} averageRating={product.averageRating} artisanId={product.artisan?._id || product.artisan} />
