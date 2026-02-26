@@ -11,6 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 
 const StarDisplay = ({ rating, size = 12 }) => (
     <div className="flex items-center gap-0.5">
@@ -54,6 +61,8 @@ const Reviews = () => {
     const [productSearch, setProductSearch] = useState('');
     const [filterRating, setFilterRating] = useState(0);
     const [activeTab, setActiveTab] = useState('products'); // 'products' or 'reviews'
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -65,8 +74,12 @@ const Reviews = () => {
         try {
             setIsLoading(true);
 
-            // Fetch ALL products from the database
-            const prodRes = await productService.getAll({ limit: 1000 });
+            // Fetch products from the database, filtering by artisan if applicable
+            const queryParams = { limit: 1000 };
+            if (user?.role === 'artisan') {
+                queryParams.artisan = user._id || user.id;
+            }
+            const prodRes = await productService.getAll(queryParams);
             const products = Array.isArray(prodRes.data)
                 ? prodRes.data
                 : prodRes.data?.products || [];
@@ -75,13 +88,23 @@ const Reviews = () => {
             // Fetch all reviews
             try {
                 const revRes = await reviewService.getAll();
-                const allReviews = Array.isArray(revRes.data)
+                let allReviews = Array.isArray(revRes.data)
                     ? revRes.data
                     : revRes.data?.reviews || revRes.data || [];
+
+                // If the user is an artisan, filter reviews to only show those for their products
+                if (user?.role === 'artisan') {
+                    const myProductIds = new Set(products.map(p => (p._id || p.id).toString()));
+                    allReviews = allReviews.filter(r => {
+                        const rProductId = (r.product?._id || r.product)?.toString();
+                        return myProductIds.has(rProductId);
+                    });
+                }
+
                 setReviews(allReviews);
             } catch {
                 // If getAll fails, try fetching per product
-                const allReviews = [];
+                let allReviews = [];
                 for (const product of products) {
                     try {
                         const revRes = await reviewService.getByProduct(product._id);
@@ -381,7 +404,10 @@ const Reviews = () => {
                                             {/* Action Buttons */}
                                             <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
                                                 <Button
-                                                    onClick={() => navigate(`/product/${product._id}#reviews`)}
+                                                    onClick={() => {
+                                                        setSelectedProduct(product);
+                                                        setIsReviewModalOpen(true);
+                                                    }}
                                                     className="flex-1 bg-black text-white hover:bg-gray-800 text-[9px] uppercase tracking-widest font-bold h-9 rounded-lg"
                                                 >
                                                     <Eye size={12} className="mr-1.5" />
@@ -463,6 +489,75 @@ const Reviews = () => {
                     )}
                 </motion.div>
             )}
+
+            {/* Reviews Dialog */}
+            <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Reviews for {selectedProduct?.name}</DialogTitle>
+                        <DialogDescription>
+                            All user reviews for this product
+                        </DialogDescription>
+                    </DialogHeader>
+                    {selectedProduct && (
+                        <div className="space-y-4 mt-4">
+                            {(() => {
+                                const productReviews = reviews.filter(r => (r.product?._id || r.product) === selectedProduct._id);
+                                if (productReviews.length === 0) {
+                                    return (
+                                        <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                            No reviews found for this product.
+                                        </div>
+                                    );
+                                }
+                                return productReviews.map(review => (
+                                    <div key={review._id} className="flex flex-col sm:flex-row gap-4 justify-between items-start p-5 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="space-y-3 flex-1 w-full">
+                                            <div className="flex items-center justify-between sm:justify-start gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                                                        <span className="text-sm font-black text-blue-600 uppercase">
+                                                            {review.user?.name?.charAt(0) || '?'}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm font-bold text-gray-900 whitespace-nowrap">
+                                                                {review.user?.name || 'Unknown User'}
+                                                            </span>
+                                                            <div className="flex items-center bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
+                                                                <StarDisplay rating={review.rating} size={10} />
+                                                                <span className="text-[10px] font-bold text-gray-500 ml-1.5">{review.rating}/5</span>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                                                            {getTimeAgo(review.createdAt)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="sm:hidden">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(review)}>
+                                                        <Trash2 size={16} />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="pl-0 sm:pl-14">
+                                                <h4 className="font-bold text-sm text-gray-900 mb-1">{review.title}</h4>
+                                                <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100">{review.text}</p>
+                                            </div>
+                                        </div>
+                                        <div className="hidden sm:block">
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-red-400 hover:text-red-600 hover:bg-red-50 bg-white border border-gray-100 shadow-sm" onClick={() => handleDelete(review)}>
+                                                <Trash2 size={16} />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ));
+                            })()}
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </motion.div>
     );
 };
