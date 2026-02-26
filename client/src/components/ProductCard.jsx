@@ -5,23 +5,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Spinner from '@/components/ui/Spinner';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+   Card,
+   CardContent,
+   CardDescription,
+   CardFooter,
+   CardHeader,
+   CardTitle,
 } from '@/components/ui/card';
 
 import useCartStore from '@/store/cartStore';
+import useAuthStore from '@/store/authStore';
 import { toast } from 'sonner';
 
-const ProductCard = ({ product, linkState = {} }) => {
+const ProductCard = ({ product }) => {
   const { addToCart } = useCartStore();
 
-  const [isAdding, setIsAdding] = useState(false);
+   const [isAdding, setIsAdding] = useState(false);
 
-  if (!product) return null;
+   if (!product) return null;
 
   const handleAddToCart = (e) => {
      e.preventDefault();
@@ -37,11 +38,9 @@ const ProductCard = ({ product, linkState = {} }) => {
      setIsAdding(false);
   };
 
-  const navigationState = { product, ...linkState };
-
   return (
     <div className="group/card cursor-pointer">
-      <Link to={`/collection/${product._id}`} state={navigationState}>
+      <Link to={`/collection/${product._id}`} state={{ product }}>
         <div className="relative aspect-[3/4] bg-[#f8f8f8] overflow-hidden mb-4 rounded-sm">
           <img 
             src={product.images?.[0] || 'https://via.placeholder.com/400x500'} 
@@ -74,7 +73,7 @@ const ProductCard = ({ product, linkState = {} }) => {
       
       <div className="flex flex-col space-y-1">
          <div className="flex justify-between items-start">
-            <Link to={`/collection/${product._id}`} state={navigationState}>
+            <Link to={`/collection/${product._id}`} state={{ product }}>
                <h3 className="text-sm font-medium text-black group-hover/card:opacity-70 transition-opacity leading-tight pr-4">
                   {product.name}
                </h3>

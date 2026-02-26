@@ -22,6 +22,14 @@ const ReviewSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  artisanReply: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  },
+  repliedAt: {
+    type: Date
+  },
   product: {
     type: mongoose.Schema.ObjectId,
     ref: 'Product',
@@ -38,7 +46,7 @@ const ReviewSchema = new mongoose.Schema({
 ReviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
 // Static method to get avg rating and save
-ReviewSchema.statics.getAverageRating = async function(productId) {
+ReviewSchema.statics.getAverageRating = async function (productId) {
   const obj = await this.aggregate([
     {
       $match: { product: productId }
@@ -61,12 +69,12 @@ ReviewSchema.statics.getAverageRating = async function(productId) {
 };
 
 // Call getAverageRating after save
-ReviewSchema.post('save', function() {
+ReviewSchema.post('save', function () {
   this.constructor.getAverageRating(this.product);
 });
 
 // Call getAverageRating before remove
-ReviewSchema.pre('remove', function() {
+ReviewSchema.pre('remove', function () {
   this.constructor.getAverageRating(this.product);
 });
 

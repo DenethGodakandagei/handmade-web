@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+
 import { LayoutDashboard, Package, ShoppingBag, Store, Settings, LogOut, MessageSquare, Hammer, Activity, ShieldAlert, Database, BarChart3, Receipt, BoxSelect, SlidersHorizontal, History, Crosshair, Radio, Users, Terminal, Globe, Download, Eye, UserCheck, Megaphone, HelpCircle } from 'lucide-react';
+
 import useAuthStore from '@/store/authStore';
 
 const NavItem = ({ item }) => (
@@ -10,8 +12,8 @@ const NavItem = ({ item }) => (
         end={item.path === '/dashboard' || item.path === '/admin'}
         className={({ isActive }) => `
             group flex items-center gap-3.5 px-4 py-2.5 rounded-md text-[13px] transition-all duration-200 relative
-            ${isActive 
-                ? 'text-black font-medium bg-gray-50' 
+            ${isActive
+                ? 'text-black font-medium bg-gray-50'
                 : 'text-gray-400 hover:text-black hover:bg-gray-50/50'
             }
         `}
@@ -44,6 +46,7 @@ const DashboardSidebar = () => {
         main: [
             { icon: LayoutDashboard, label: 'Overview', path: '/admin' },
             { icon: Package, label: 'Products', path: '/admin/products' },
+            { icon: Star, label: 'Reviews', path: '/admin/reviews' },
             { icon: ShoppingBag, label: 'Orders', path: '/admin/orders' },
             { icon: Store, label: 'Users', path: '/admin/users' },
             { icon: HelpCircle, label: 'FAQs', path: '/admin/faqs' },
@@ -79,6 +82,7 @@ const DashboardSidebar = () => {
     const userNav = [
         { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
         { icon: Package, label: 'Products', path: '/dashboard/products' },
+        { icon: Star, label: 'Reviews', path: '/dashboard/reviews' },
         { icon: ShoppingBag, label: 'Orders', path: '/dashboard/orders' },
         { icon: Hammer, label: 'Customizations', path: '/dashboard/customizations' },
         { icon: MessageSquare, label: 'Messages', path: '/dashboard/messages' },
@@ -92,14 +96,14 @@ const DashboardSidebar = () => {
             <div className="px-8 pt-8 pb-6 flex-shrink-0">
                 <NavLink to="/" className="block">
                     <h1 className="text-xl font-semibold tracking-tighter text-black hover:opacity-50 transition-opacity">
-                    ARTISAN<span className="text-gray-300">.</span>
+                        ARTISAN<span className="text-gray-300">.</span>
                     </h1>
                     {isAdmin && (
                         <span className="text-[8px] uppercase tracking-[0.25em] font-bold text-gray-300 mt-0.5 block">Admin Console</span>
                     )}
                 </NavLink>
             </div>
-            
+
             {/* Scrollable nav area */}
             <div className="flex-1 overflow-y-auto px-5 pb-4 scrollbar-thin">
                 {isAdmin ? (
@@ -138,7 +142,7 @@ const DashboardSidebar = () => {
 
             {/* Sign Out — sticky bottom */}
             <div className="px-5 py-4 border-t border-gray-100 flex-shrink-0">
-                <button 
+                <button
                     onClick={logout}
                     className="group flex items-center gap-3.5 px-4 py-2.5 rounded-md text-[13px] text-gray-400 hover:text-red-500 transition-colors w-full"
                 >
