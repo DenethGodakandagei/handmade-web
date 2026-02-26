@@ -5,23 +5,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Spinner from '@/components/ui/Spinner';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+   Card,
+   CardContent,
+   CardDescription,
+   CardFooter,
+   CardHeader,
+   CardTitle,
 } from '@/components/ui/card';
 
 import useCartStore from '@/store/cartStore';
+import useAuthStore from '@/store/authStore';
 import { toast } from 'sonner';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCartStore();
 
-  const [isAdding, setIsAdding] = useState(false);
+   const [isAdding, setIsAdding] = useState(false);
 
-  if (!product) return null;
+   if (!product) return null;
 
   const handleAddToCart = (e) => {
      e.preventDefault();

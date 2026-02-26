@@ -17,7 +17,9 @@ const DataTable = ({
   onEdit, 
   onDelete, 
   onFavorite, 
-  isLoading 
+  isLoading,
+  searchPlaceholder = 'SEARCH RECORDS...',
+  showSearch = true
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState(null);
@@ -57,17 +59,19 @@ const DataTable = ({
   return (
     <div className="w-full bg-white border border-gray-100 overflow-hidden rounded-none">
       {/* Header / Toolbar */}
-      <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative max-w-sm w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
-          <Input 
-            placeholder="SEARCH RECORDS..." 
-            className="pl-10 h-11 rounded-none border-gray-100 text-[10px] uppercase font-bold tracking-widest focus-visible:ring-black"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {showSearch && (
+        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative max-w-sm w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
+            <Input 
+              placeholder={searchPlaceholder} 
+              className="pl-10 h-11 rounded-none border-gray-100 text-[10px] uppercase font-bold tracking-widest focus-visible:ring-black"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -124,11 +128,11 @@ const DataTable = ({
                       </TableCell>
                     ))}
                     <TableCell className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      <div className="flex items-center justify-end gap-1 opacity-100 transition-all">
                         {onFavorite && (
                           <button 
                             onClick={() => onFavorite(row)}
-                            className={`p-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all ${row.isFavorite ? 'text-red-500' : 'text-gray-300'}`}
+                            className={`p-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer ${row.isFavorite ? 'text-red-500' : 'text-gray-300'}`}
                           >
                             <Heart size={14} fill={row.isFavorite ? "currentColor" : "none"} />
                           </button>
@@ -136,7 +140,7 @@ const DataTable = ({
                         {onEdit && (
                           <button 
                             onClick={() => onEdit(row)}
-                            className="p-2 text-gray-400 hover:text-black hover:bg-white border border-transparent hover:border-gray-100 transition-all"
+                            className="p-2 text-gray-400 hover:text-black hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer"
                           >
                             <Edit2 size={14} />
                           </button>
@@ -144,12 +148,12 @@ const DataTable = ({
                         {onDelete && (
                           <button 
                             onClick={() => onDelete(row)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-white border border-transparent hover:border-gray-100 transition-all"
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-white border border-transparent hover:border-gray-100 transition-all cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>
                         )}
-                        <button className="p-2 text-gray-300">
+                        <button className="p-2 text-gray-300 cursor-pointer">
                            <MoreHorizontal size={14} />
                         </button>
                       </div>

@@ -168,6 +168,23 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #ffffff;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #cfcfcf;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #9c9c9c;
+  }
+
   ::selection {
     background-color: rgba(164, 92, 64, 0.15);
     color: #603627;
@@ -333,14 +350,20 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #ffffff;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4c4bb;
-  border-radius: 99px;
+  background: #cfcfcf;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a45c40;
+  background: #9c9c9c;
+}
+
+html,
+body {
+  scrollbar-color: #cfcfcf #ffffff;
+  scrollbar-width: thin;
 }
 
 @keyframes marquee {

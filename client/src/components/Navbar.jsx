@@ -21,8 +21,8 @@ const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleLogout = () => {
-      setIsSheetOpen(false);
-      logout();
+    setIsSheetOpen(false);
+    logout();
   }
 
   const validItems = Array.isArray(items) ? items.filter(item => item && item.product) : [];
@@ -93,35 +93,41 @@ const Navbar = () => {
         {/* Right Nav */}
         <div className="col-span-2 md:col-span-4 flex items-center justify-end space-x-6">
           {isAuthenticated ? (
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <Sheet
+              open={isSheetOpen}
+              onOpenChange={(open) => {
+                setIsSheetOpen(open);
+                window.dispatchEvent(new CustomEvent('profile-sheet', { detail: { open } }));
+              }}
+            >
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-auto p-0 hover:bg-transparent cursor-pointer">
                   <User className="w-5 h-5 text-black hover:opacity-50 transition-opacity" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-full sm:max-w-md border-l border-gray-100 bg-white p-10 flex flex-col h-full data-[state=open]:duration-500">
-                 <SheetHeader className="mb-12 text-left">
-                   <SheetTitle className="font-serif italic text-3xl font-light">Account.</SheetTitle>
-                   <SheetDescription className="text-gray-400 text-xs tracking-widest uppercase">
-                      Welcome back, {user?.name || 'Artisan'}
-                   </SheetDescription>
-                 </SheetHeader>
+                <SheetHeader className="mb-12 text-left">
+                  <SheetTitle className="font-serif italic text-3xl font-light">Account.</SheetTitle>
+                  <SheetDescription className="text-gray-400 text-xs tracking-widest uppercase">
+                    Welcome back, {user?.name || 'Artisan'}
+                  </SheetDescription>
+                </SheetHeader>
 
-                 <div className="flex-1 flex flex-col space-y-8">
-                    <Link onClick={() => setIsSheetOpen(false)} to={user?.role === 'admin' ? '/admin' : '/dashboard'} className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">
-                      {user?.role === 'admin' ? 'Admin Core' : 'Dashboard'}
-                    </Link>
-                    <Link onClick={() => setIsSheetOpen(false)} to="/profile" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Profile</Link>
-                    {user?.role !== 'admin' && (
-                      <Link onClick={() => setIsSheetOpen(false)} to="/artisans/apply" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 opacity-50 cursor-pointer">Sell on Guild</Link>
-                    )}
-                 </div>
+                <div className="flex-1 flex flex-col space-y-8">
+                  <Link onClick={() => setIsSheetOpen(false)} to={user?.role === 'admin' ? '/admin' : (user?.sellerRequestStatus === 'approved' ? '/dashboard' : '/account')} className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">
+                    {user?.role === 'admin' ? 'Admin Core' : (user?.sellerRequestStatus === 'approved' ? 'Dashboard' : 'My Account')}
+                  </Link>
+                  <Link onClick={() => setIsSheetOpen(false)} to="/profile" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Profile</Link>
+                  {user?.role !== 'admin' && (
+                    <Link onClick={() => setIsSheetOpen(false)} to="/artisans/apply" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 opacity-50 cursor-pointer">Sell on Guild</Link>
+                  )}
+                </div>
 
-                 <div className="mt-auto pt-8 border-t border-gray-100">
-                    <button onClick={handleLogout} className="text-xs uppercase tracking-[0.2em] font-bold text-black hover:text-red-500 transition-colors cursor-pointer">
-                       Log Out
-                    </button>
-                 </div>
+                <div className="mt-auto pt-8 border-t border-gray-100">
+                  <button onClick={handleLogout} className="text-xs uppercase tracking-[0.2em] font-bold text-black hover:text-red-500 transition-colors cursor-pointer">
+                    Log Out
+                  </button>
+                </div>
               </SheetContent>
             </Sheet>
           ) : (

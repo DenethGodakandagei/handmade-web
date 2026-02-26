@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Artisans from './pages/Artisans';
+import ArtisanDetails from './pages/ArtisanDetails';
 import ArtisanApplication from './pages/ArtisanApplication';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -19,11 +20,14 @@ import Settings from './pages/dashboard/Settings';
 import Storefront from './pages/dashboard/Storefront';
 import Messages from './pages/dashboard/Messages';
 import Customizations from './pages/dashboard/Customizations';
+import DashboardReviews from './pages/dashboard/Reviews';
+import AddReview from './pages/dashboard/AddReview';
 import AddProduct from './pages/dashboard/AddProduct';
 import MainLayout from './components/MainLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProducts from './pages/admin/AdminProducts';
+import AdminReviews from './pages/admin/AdminReviews';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminSystem from './pages/admin/AdminSystem';
 import AdminDatabase from './pages/admin/AdminDatabase';
@@ -43,6 +47,7 @@ import AdminModeration from './pages/admin/AdminModeration';
 import AdminVerification from './pages/admin/AdminVerification';
 import AdminBroadcast from './pages/admin/AdminBroadcast';
 import AdminUserProfile from './pages/admin/AdminUserProfile';
+import AdminFaqs from './pages/admin/AdminFaqs';
 import UserDashboard from './pages/UserDashboard';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
@@ -67,6 +72,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/artisans" element={<Artisans />} />
+          <Route path="/artisans/:id" element={<ArtisanDetails />} />
           <Route path="/artisans/apply" element={<ArtisanApplication />} />
           <Route path="/collection" element={<ProductList />} />
           <Route path="/collection/:id" element={<ProductDetails />} />
@@ -140,6 +146,10 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="products/add" element={<AddProduct />} />
           <Route path="products/edit/:id" element={<AddProduct />} />
+          <Route path="reviews" element={<DashboardReviews />} />
+          <Route path="reviews/add" element={<AddReview />} />
+          <Route path="reviews/edit/:id" element={<AddReview />} />
+          <Route path="reviews/view/:id" element={<AddReview />} />
           <Route path="customizations" element={<Customizations />} />
           <Route path="settings" element={<Settings />} />
           <Route path="storefront" element={<Storefront />} />
@@ -147,7 +157,7 @@ function App() {
         </Route>
 
 // Import removed since we reuse DashboardLayout
-// import AdminLayout from './components/admin/AdminLayout';
+        // import AdminLayout from './components/admin/AdminLayout';
 
         <Route
           path="/admin"
@@ -160,6 +170,7 @@ function App() {
           <Route index element={<AdminOverview />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="products" element={<AdminProducts />} />
+          <Route path="reviews" element={<AdminReviews />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="system" element={<AdminSystem />} />
           <Route path="database" element={<AdminDatabase />} />
@@ -178,6 +189,7 @@ function App() {
           <Route path="moderation" element={<AdminModeration />} />
           <Route path="verification" element={<AdminVerification />} />
           <Route path="broadcast" element={<AdminBroadcast />} />
+          <Route path="faqs" element={<AdminFaqs />} />
           <Route path="users/:id" element={<AdminUserProfile />} />
         </Route>
 

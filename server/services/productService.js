@@ -7,7 +7,7 @@ export const getAllProducts = async (reqQuery) => {
   const queryObj = { ...reqQuery };
 
   // Fields to exclude
-  const removeFields = ['select', 'sort', 'page', 'limit'];
+  const removeFields = ['select', 'sort', 'page', 'limit', 'noCache'];
 
   // Loop over removeFields and delete from reqQuery
   removeFields.forEach(param => delete queryObj[param]);
@@ -18,10 +18,19 @@ export const getAllProducts = async (reqQuery) => {
   // Create operators ($gt, $gte, etc)
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
+  const filter = JSON.parse(queryStr);
+  
+  // Explicitly handle artisan ID casting if present as a string
+  if (filter.artisan && typeof filter.artisan === 'string' && filter.artisan.match(/^[0-9a-fA-F]{24}$/)) {
+    // Mongoose will handle the string-to-ObjectId conversion automatically in most cases, 
+    // but explicit assignment ensures consistency with the schema type.
+    filter.artisan = filter.artisan; 
+  }
+
   // Finding resource
-  let query = Product.find(JSON.parse(queryStr))
+  let query = Product.find(filter)
     .populate('category', 'name')
-    .populate('artisan', 'name');
+    .populate('artisan', 'name profilePicture location bio');
 
   // Select Fields
   if (reqQuery.select) {

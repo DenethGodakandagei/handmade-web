@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, ShoppingBag, Settings,
   LogOut, ChevronLeft, ChevronRight, Hammer,
   ShieldCheck, ArrowLeft, Package, User, Database,
-  Sparkles, Zap
+  Sparkles, Zap, HelpCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import useAuthStore from '../store/authStore';
@@ -30,6 +30,7 @@ const Sidebar = ({ role }) => {
     { name: 'Identity Index', path: '/admin/users', icon: Users },
     { name: 'Archive Control', path: '/admin/products', icon: Database },
     { name: 'Pulse Log', path: '/admin/orders', icon: Zap },
+    { name: 'FAQ Registry', path: '/admin/faqs', icon: HelpCircle },
     { name: 'System Heart', path: '/admin/settings', icon: Settings },
   ];
 

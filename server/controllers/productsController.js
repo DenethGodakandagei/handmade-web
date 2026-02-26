@@ -3,7 +3,7 @@ import * as productService from '../services/productService.js';
 import path from 'path';
 import fs from 'fs';
 import ResponseHandler from '../utils/ResponseHandler.js';
-import { set as setCache } from '../utils/cacheService.js';
+import { set as setCache, flush as flushCache } from '../utils/cacheService.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
 // @desc      Get all products
@@ -11,10 +11,6 @@ import asyncHandler from '../middleware/asyncHandler.js';
 // @access    Public
 export const getProducts = asyncHandler(async (req, res, next) => {
   const { products, pagination, count } = await productService.getAllProducts(req.query);
-
-  if (req.cacheKey) {
-    setCache(req.cacheKey, products, 60);
-  }
 
   ResponseHandler.success(res, 200, 'Products fetched successfully', {
     products,
@@ -92,6 +88,9 @@ export const createProduct = async (req, res, next) => {
 
     const product = await productService.createProduct(req.body);
 
+    // Invalidate product cache so lists show updated data immediately
+    flushCache();
+
     ResponseHandler.success(res, 201, 'Product created', product);
   } catch (err) {
     next(err);
@@ -154,6 +153,9 @@ export const updateProduct = async (req, res, next) => {
 
     product = await productService.updateProduct(req.params.id, req.body);
 
+    // Invalidate product cache so lists show updated data immediately
+    flushCache();
+
     ResponseHandler.success(res, 200, 'Product updated', product);
   } catch (err) {
     next(err);
@@ -185,6 +187,9 @@ export const deleteProduct = async (req, res, next) => {
     }
 
     await productService.deleteProduct(req.params.id);
+
+    // Invalidate product cache so lists show updated data immediately
+    flushCache();
 
     ResponseHandler.success(res, 200, 'Product deleted', {});
   } catch (err) {
