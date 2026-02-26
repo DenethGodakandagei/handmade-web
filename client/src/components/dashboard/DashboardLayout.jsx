@@ -39,7 +39,7 @@ const DashboardLayout = () => {
                     </div>
                 )}
 
-                <main className="min-h-screen py-8 px-6 md:px-12 relative max-w-7xl mx-auto">
+                <main className="min-h-screen pt-4 pb-8 px-6 md:px-12 relative max-w-7xl mx-auto">
                     <Outlet />
                 </main>
             </div>
