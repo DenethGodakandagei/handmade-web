@@ -18,7 +18,7 @@ import Products from './pages/dashboard/Products';
 import Orders from './pages/dashboard/Orders';
 import Settings from './pages/dashboard/Settings';
 import Storefront from './pages/dashboard/Storefront';
-import Messages from './pages/dashboard/Messages';
+import ChatPage from './components/Chat.jsx';
 import Customizations from './pages/dashboard/Customizations';
 import DashboardReviews from './pages/dashboard/Reviews';
 import AddReview from './pages/dashboard/AddReview';
@@ -58,7 +58,6 @@ import Support from './pages/Support';
 import useAuthStore from './store/authStore';
 import { Toaster } from '@/components/ui/sonner';
 import CartSidebar from './components/CartSidebar';
-import AuthModal from './components/AuthModal';
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -153,7 +152,7 @@ function App() {
           <Route path="customizations" element={<Customizations />} />
           <Route path="settings" element={<Settings />} />
           <Route path="storefront" element={<Storefront />} />
-          <Route path="messages" element={<Messages />} />
+          
         </Route>
 
 // Import removed since we reuse DashboardLayout
