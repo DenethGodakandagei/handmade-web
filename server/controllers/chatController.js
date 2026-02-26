@@ -4,8 +4,17 @@ import {
   sendMessageService,
   getMessagesService,
   editMessageService,
-  deleteMessageService
+  deleteMessageService,
+  getMyChatsService
 } from "../services/chatService.js";
+
+/**
+ * @desc Get all chats for the current user
+ */
+export const getMyChats = asyncHandler(async (req, res) => {
+  const chats = await getMyChatsService(req.user.id);
+  res.status(200).json({ success: true, data: chats });
+});
 
 /**
  * @desc Start or get chat
