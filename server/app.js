@@ -32,7 +32,7 @@ import securityOps from './routes/securityOpsRoutes.js';
 import adminExtended from './routes/adminExtendedRoutes.js';
 import announcements from './routes/announcementRoutes.js';
 import payment from './routes/paymentRoute.js';
-import messageRoutes from './routes/messageRoute.js'
+import chat from './routes/chatRoute.js';
 import faqs from './routes/faqsRoute.js';
 
 
@@ -102,7 +102,7 @@ app.use('/api/v1/admin/security', securityOps);
 app.use('/api/v1/admin/ext', adminExtended);
 app.use('/api/v1/announcements', announcements);
 app.use('/api/v1/payment', payment);
-app.use('/api/v1/messages', messageRoutes);
+app.use('/api/v1/chat', chat);
 app.use('/api/v1/faqs', faqs);
 
 
