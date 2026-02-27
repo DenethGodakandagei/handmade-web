@@ -1,18 +1,63 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Heart } from 'lucide-react';
+import { Minus, Plus, Heart, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Spinner from '@/components/ui/Spinner';
 import { Link } from 'react-router-dom';
 import useCartStore from '../../store/cartStore';
 import { toast } from 'sonner';
 
+// API and Components
+import { startChat } from '../../api/axiosClient'; 
+import Chat from '../Chat.jsx'; 
+
 const ProductActions = ({
   product, stock, isAuthenticated, user
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+
+  // Chat States
+    const [isChatLoading, setIsChatLoading] = useState(false);
+    const [showChatModal, setShowChatModal] = useState(false);
+    const [chatId, setChatId] = useState(null);
+
   const { addToCart } = useCartStore();
+
+   const handleChat = async () => {
+      if (!user) {
+        toast.error("Please login to chat with seller");
+        return;
+      }
+  
+      const artisanId = product?.artisan?._id || product?.artisan;
+      if (!artisanId) {
+        toast.error("Artisan information missing");
+        return;
+      }
+  
+      try {
+        setIsChatLoading(true);
+        
+        // Call startChat - the interceptor returns the body { success: true, data: { _id... } }
+        const response = await startChat(artisanId, product._id);
+        
+        // Access the ID from the 'data' property of your backend response
+        const id = response?.data?._id;
+  
+        if (id) {
+          setChatId(id);
+          setShowChatModal(true);
+        } else {
+          throw new Error("Chat ID not found in server response");
+        }
+      } catch (err) {
+        console.error("Chat Error:", err);
+        toast.error("Unable to start chat. Please try again.");
+      } finally {
+        setIsChatLoading(false);
+      }
+    };
 
   const handleAddToCart = () => {
     if (stock > 0) {
@@ -130,6 +175,25 @@ const ProductActions = ({
       <Link to={`/customizations/new/${product._id}`} className="block text-center py-2 text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-black transition-colors border-b border-transparent hover:border-black w-max mx-auto">
         Request Customization
       </Link>
+
+      <button
+        onClick={handleChat}
+        disabled={isChatLoading}
+        className="block w-full text-center text-xs uppercase text-gray-500 hover:text-black flex items-center justify-center gap-2 mt-2 transition-all"
+      >
+        {isChatLoading ? <Spinner className="w-3 h-3" /> : <MessageSquare size={14} />}
+        {isChatLoading ? 'Connecting...' : 'Chat With Seller'}
+      </button>
+
+      {/* THE MODAL */}
+      <AnimatePresence>
+        {showChatModal && chatId && (
+          <Chat 
+            chatId={chatId} 
+            onClose={() => setShowChatModal(false)} 
+          />
+        )}
+      </AnimatePresence>
 
     </div>
   );
