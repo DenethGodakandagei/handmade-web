@@ -345,28 +345,69 @@ const Messages = () => {
                         ) : (
                             <>
                                 {/* Chat Header */}
-                                <div className="h-16 lg:h-18 px-4 lg:px-6 border-b border-gray-100 flex items-center justify-between bg-white shadow-sm z-10">
-                                    <div className="flex items-center gap-3">
+                                <div className="px-4 lg:px-6 border-b border-gray-100 bg-white shadow-sm z-10">
+                                    {/* Top bar: back + avatar + name */}
+                                    <div className="h-16 flex items-center gap-3">
                                         <button
                                             onClick={() => setShowMobileList(true)}
                                             className="lg:hidden p-2 -ml-1 text-gray-500 hover:text-black rounded-full hover:bg-gray-50 transition-colors"
                                         >
                                             <ArrowLeft size={18} />
                                         </button>
-                                        <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white text-sm font-semibold shadow">
+                                        <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white text-sm font-semibold shadow flex-shrink-0">
                                             {getOtherParty(selectedChat, user?._id)?.name?.charAt(0)?.toUpperCase()}
                                         </div>
                                         <div>
                                             <h4 className="font-semibold text-sm lg:text-base text-black leading-tight">
                                                 {getOtherParty(selectedChat, user?._id)?.name}
                                             </h4>
-                                            {selectedChat.product?.name && (
-                                                <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                                                    <Package size={9} /> {selectedChat.product.name}
-                                                </p>
-                                            )}
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                                                {getOtherParty(selectedChat, user?._id)?.role}
+                                            </p>
                                         </div>
                                     </div>
+
+                                    {/* Product info card */}
+                                    {selectedChat.product && (
+                                        <div className="mb-3 flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
+                                            {/* Thumbnail */}
+                                            {selectedChat.product.images?.[0] ? (
+                                                <img
+                                                    src={selectedChat.product.images[0]}
+                                                    alt={selectedChat.product.name}
+                                                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 border border-gray-200">
+                                                    <Package size={18} className="text-gray-400" />
+                                                </div>
+                                            )}
+                                            {/* Details */}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-black truncate leading-tight">
+                                                    {selectedChat.product.name}
+                                                </p>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    {selectedChat.product.price != null && (
+                                                        <span className="text-xs font-bold text-black">
+                                                            $ {selectedChat.product.price.toLocaleString()}
+                                                        </span>
+                                                    )}
+                                                    {selectedChat.product.stock != null && (
+                                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                                            selectedChat.product.stock > 0
+                                                                ? 'bg-emerald-50 text-emerald-600'
+                                                                : 'bg-red-50 text-red-500'
+                                                        }`}>
+                                                            {selectedChat.product.stock > 0
+                                                                ? `${selectedChat.product.stock} in stock`
+                                                                : 'Out of stock'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Messages */}

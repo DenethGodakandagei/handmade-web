@@ -25,7 +25,7 @@ export const getMyChatsService = async (userId) => {
   })
     .populate("customer", "name email role")
     .populate("artisan", "name email role")
-    .populate("product", "name images")
+    .populate("product", "name images price stock")
     .sort({ updatedAt: -1 });
 };
 

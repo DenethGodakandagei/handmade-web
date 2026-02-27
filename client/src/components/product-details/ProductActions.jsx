@@ -188,9 +188,11 @@ const ProductActions = ({
       {/* THE MODAL */}
       <AnimatePresence>
         {showChatModal && chatId && (
-          <Chat 
-            chatId={chatId} 
-            onClose={() => setShowChatModal(false)} 
+          <Chat
+            chatId={chatId}
+            onClose={() => setShowChatModal(false)}
+            product={product}
+            sellerName={product?.artisan?.name ?? "Artisan"}
           />
         )}
       </AnimatePresence>
