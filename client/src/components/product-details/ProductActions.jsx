@@ -177,13 +177,17 @@ const ProductActions = ({
       </Link>
 
       <button
+        className="block text-center py-2 text-[10px] font-bold tracking-[0.2em] uppercase 
+             text-gray-500 hover:text-black transition-colors 
+             border-b border-transparent hover:border-black 
+             w-max mx-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
         onClick={handleChat}
         disabled={isChatLoading}
-        className="block w-full text-center text-xs uppercase text-gray-500 hover:text-black flex items-center justify-center gap-2 mt-2 transition-all"
-      >
-        {isChatLoading ? <Spinner className="w-3 h-3" /> : <MessageSquare size={14} />}
+        >
         {isChatLoading ? 'Connecting...' : 'Chat With Seller'}
       </button>
+
+
 
       {/* THE MODAL */}
       <AnimatePresence>
