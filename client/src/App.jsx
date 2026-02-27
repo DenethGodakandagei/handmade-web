@@ -18,7 +18,7 @@ import Products from './pages/dashboard/Products';
 import Orders from './pages/dashboard/Orders';
 import Settings from './pages/dashboard/Settings';
 import Storefront from './pages/dashboard/Storefront';
-import ChatPage from './components/Chat.jsx';
+import Message from './pages/dashboard/Messages';
 import Customizations from './pages/dashboard/Customizations';
 import DashboardReviews from './pages/dashboard/Reviews';
 import AddReview from './pages/dashboard/AddReview';
@@ -130,6 +130,7 @@ function App() {
           }
         >
           <Route path="orders" element={<Orders />} />
+          <Route path="messages" element={<Message />} />
         </Route>
 
         {/* Full Dashboard — sellers/artisans only */}

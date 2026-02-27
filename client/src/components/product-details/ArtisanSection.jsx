@@ -7,11 +7,12 @@ const ArtisanSection = ({ artisan, artisanId }) => {
     if (!artisan) return null;
 
     const artisanName = artisan.name || "Unknown Artisan";
-    const artisanImage = artisan.profilePicture || artisan.image; 
+    const artisanImage = artisan.profilePicture; 
     const artisanLocation = artisan.location || "Sri Lanka";
     const resolvedArtisanId = artisanId || artisan?._id || artisan?.id || null;
     const artisanProfilePath = resolvedArtisanId ? `/artisans/${resolvedArtisanId}` : '/artisans';
 
+    console.log("artisanImage", artisanImage);
     return (
         <div className="container mx-auto px-6 md:px-12">
             <motion.section 
