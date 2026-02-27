@@ -5,6 +5,7 @@ import messageService from '../api/services/messageService';
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '') : 'http://localhost:4000';
 
 const useMessageStore = create((set, get) => ({
+    // ---- Legacy DM state (socket-based) ----
     contacts: [],
     chats: [],
     messages: [],
@@ -35,14 +36,10 @@ const useMessageStore = create((set, get) => ({
         });
 
         newSocket.on('newMessage', (newMessage) => {
-            const { selectedUser, messages, chats } = get();
-
-            // If the message belongs to the currently selected chat, append it
+            const { selectedUser, messages } = get();
             if (selectedUser && (newMessage.senderId === selectedUser._id || newMessage.receiverId === selectedUser._id)) {
                 set({ messages: [...messages, newMessage] });
             }
-
-            // TODO: Maybe update the chats list order (bring to top), but for now just refresh or we ignore.
         });
 
         set({ socket: newSocket });
@@ -92,7 +89,6 @@ const useMessageStore = create((set, get) => ({
             const newMessage = await messageService.sendMessage(selectedUser._id, { text, image });
             set({ messages: [...messages, newMessage] });
 
-            // If this is a new chat, add it to chats list if not present
             if (!chats.find(c => c._id === selectedUser._id)) {
                 set({ chats: [selectedUser, ...chats] });
             }
@@ -112,7 +108,99 @@ const useMessageStore = create((set, get) => ({
         }
     },
 
-    addMessage: (message) => set((state) => ({ messages: [...state.messages, message] }))
+    addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
+
+    // ---- Chat-room state (REST-based) ----
+    chatList: [],
+    selectedChat: null,
+    chatMessages: [],
+    loadingChats: false,
+    loadingChatMessages: false,
+    sendingChatMessage: false,
+    editingMessageId: null,
+
+    fetchMyChats: async () => {
+        set({ loadingChats: true });
+        try {
+            const response = await messageService.getMyChats();
+            const data = response?.data ?? response ?? [];
+            set({ chatList: Array.isArray(data) ? data : [] });
+        } catch (error) {
+            console.error('Failed to fetch chats:', error);
+            set({ chatList: [] });
+        } finally {
+            set({ loadingChats: false });
+        }
+    },
+
+    selectChat: (chat) => {
+        set({ selectedChat: chat, chatMessages: [] });
+        if (chat) {
+            get().fetchChatMessages(chat._id);
+        }
+    },
+
+    fetchChatMessages: async (chatId) => {
+        set({ loadingChatMessages: true });
+        try {
+            const response = await messageService.getChatMessages(chatId);
+            const data = response?.data ?? response ?? [];
+            set({ chatMessages: Array.isArray(data) ? data : [] });
+        } catch (error) {
+            console.error('Failed to fetch chat messages:', error);
+            set({ chatMessages: [] });
+        } finally {
+            set({ loadingChatMessages: false });
+        }
+    },
+
+    sendChatMessage: async (content) => {
+        const { selectedChat, chatMessages } = get();
+        if (!selectedChat || !content.trim()) return;
+
+        set({ sendingChatMessage: true });
+        try {
+            const response = await messageService.sendChatMessage(selectedChat._id, content);
+            const newMsg = response?.data ?? response;
+            set({ chatMessages: [...chatMessages, newMsg] });
+            // Update lastMessage in the chat list
+            set((state) => ({
+                chatList: state.chatList.map(c =>
+                    c._id === selectedChat._id ? { ...c, lastMessage: content, updatedAt: new Date().toISOString() } : c
+                )
+            }));
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        } finally {
+            set({ sendingChatMessage: false });
+        }
+    },
+
+    editChatMessage: async (messageId, content) => {
+        const { chatMessages } = get();
+        try {
+            const response = await messageService.editChatMessage(messageId, content);
+            const updated = response?.data ?? response;
+            set({
+                chatMessages: chatMessages.map(m => m._id === messageId ? { ...m, content: updated.content ?? content, isEdited: true } : m),
+                editingMessageId: null
+            });
+        } catch (error) {
+            console.error('Failed to edit message:', error);
+        }
+    },
+
+    deleteChatMessage: async (messageId) => {
+        const { chatMessages } = get();
+        try {
+            await messageService.deleteChatMessage(messageId);
+            set({ chatMessages: chatMessages.filter(m => m._id !== messageId) });
+        } catch (error) {
+            console.error('Failed to delete message:', error);
+        }
+    },
+
+    setEditingMessageId: (id) => set({ editingMessageId: id }),
 }));
 
 export default useMessageStore;

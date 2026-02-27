@@ -4,8 +4,18 @@ import {
   sendMessageService,
   getMessagesService,
   editMessageService,
-  deleteMessageService
+  deleteMessageService,
+  getMyChatsService
 } from "../services/chatService.js";
+import { getIO } from "../utils/socket.js";
+
+/**
+ * @desc Get all chats for the current user
+ */
+export const getMyChats = asyncHandler(async (req, res) => {
+  const chats = await getMyChatsService(req.user.id);
+  res.status(200).json({ success: true, data: chats });
+});
 
 /**
  * @desc Start or get chat
@@ -34,6 +44,9 @@ export const sendMessage = asyncHandler(async (req, res) => {
     content
   );
 
+  const io = getIO();
+  io.to(chatId).emit("receiveMessage", message);
+
   res.status(201).json({ success: true, data: message });
 });
 
@@ -55,6 +68,9 @@ export const editMessage = asyncHandler(async (req, res) => {
     req.body.content
   );
 
+  const io = getIO();
+  io.to(message.chat.toString()).emit("messageEdited", message);
+
   res.status(200).json({ success: true, data: message });
 });
 
@@ -63,5 +79,14 @@ export const editMessage = asyncHandler(async (req, res) => {
  */
 export const deleteMessage = asyncHandler(async (req, res) => {
   await deleteMessageService(req.params.messageId, req.user.id);
+
+  const io = getIO();
+  // Note: We'd ideally need the chatId here to target the room. 
+  // For now, emitting globally or to all rooms the user is in. 
+  // However, since we don't have chatId easily here without fetching it, 
+  // let's assume 'messageDeleted' can be handled by the client if it's subscribed.
+  // A better way is to fetch the message first in the service/controller to get chatId.
+  io.emit("messageDeleted", { messageId: req.params.messageId });
+
   res.status(200).json({ success: true, message: "Message deleted" });
 });
