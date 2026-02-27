@@ -4,13 +4,15 @@ import {
   sendMessage,
   getMessages,
   editMessage,
-  deleteMessage
+  deleteMessage,
+  getMyChats
 } from "../controllers/chatController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+router.get("/", protect, getMyChats);
 router.post("/start", protect, startChat);
 router.post("/message", protect, sendMessage);
 router.get("/:chatId/messages", protect, getMessages);

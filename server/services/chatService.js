@@ -19,6 +19,16 @@ export const startChatService = async (customerId, artisanId, productId) => {
   return chat;
 };
 
+export const getMyChatsService = async (userId) => {
+  return Chat.find({
+    $or: [{ customer: userId }, { artisan: userId }]
+  })
+    .populate("customer", "name email role")
+    .populate("artisan", "name email role")
+    .populate("product", "name images price stock")
+    .sort({ updatedAt: -1 });
+};
+
 export const sendMessageService = async (chatId, senderId, content) => {
   const message = await Message.create({
     chat: chatId,
