@@ -6,9 +6,34 @@ const router = express.Router();
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 /**
- * POST /api/v1/payment/create-payment-intent
- * Creates a Stripe PaymentIntent and returns the client_secret.
- * Body: { amount: number (in cents), currency: string }
+ * @swagger
+ * tags:
+ *   name: Payments
+ *   description: Payment integration
+ */
+
+/**
+ * @swagger
+ * /payment/create-payment-intent:
+ *   post:
+ *     summary: Create a Stripe PaymentIntent
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               currency:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: PaymentIntent created
  */
 router.post('/create-payment-intent', protect, async (req, res) => {
     try {
