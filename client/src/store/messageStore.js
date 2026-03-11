@@ -118,6 +118,7 @@ const useMessageStore = create((set, get) => ({
     loadingChatMessages: false,
     sendingChatMessage: false,
     editingMessageId: null,
+    chatSocket: null,
 
     fetchMyChats: async () => {
         set({ loadingChats: true });
@@ -136,6 +137,8 @@ const useMessageStore = create((set, get) => ({
     selectChat: (chat) => {
         set({ selectedChat: chat, chatMessages: [] });
         if (chat) {
+            get().connectChatSocket();
+            get().joinChatRoom(chat._id);
             get().fetchChatMessages(chat._id);
         }
     },
@@ -155,7 +158,7 @@ const useMessageStore = create((set, get) => ({
     },
 
     sendChatMessage: async (content) => {
-        const { selectedChat, chatMessages } = get();
+        const { selectedChat, chatMessages, chatSocket } = get();
         if (!selectedChat || !content.trim()) return;
 
         set({ sendingChatMessage: true });
@@ -201,6 +204,63 @@ const useMessageStore = create((set, get) => ({
     },
 
     setEditingMessageId: (id) => set({ editingMessageId: id }),
+    connectChatSocket: () => {
+        const { chatSocket } = get();
+        if (chatSocket?.connected) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const newSocket = io(SOCKET_URL, { auth: { token } });
+
+        newSocket.on('connect', () => {
+            console.log('Chat socket connected');
+        });
+
+        newSocket.on('receiveMessage', (msg) => {
+            const { selectedChat, chatMessages } = get();
+            if (selectedChat && msg.chatId === selectedChat._id) {
+                // ignore duplicates (e.g. message originated from this client)
+                if (msg._id && chatMessages.some(m => m._id === msg._id)) return;
+                set({ chatMessages: [...chatMessages, msg] });
+            }
+        });
+
+        newSocket.on('messageEdited', (msg) => {
+            const { chatMessages } = get();
+            set({
+                chatMessages: chatMessages.map(m => (m._id === msg._id ? msg : m))
+            });
+        });
+
+        newSocket.on('messageDeleted', ({ messageId }) => {
+            const { chatMessages } = get();
+            set({ chatMessages: chatMessages.filter(m => m._id !== messageId) });
+        });
+
+        set({ chatSocket: newSocket });
+    },
+
+    joinChatRoom: (chatId) => {
+        const { chatSocket } = get();
+        if (!chatSocket) return;
+        if (chatSocket.connected) {
+            chatSocket.emit('joinChat', chatId);
+        } else {
+            // wait until connection before joining
+            const handler = () => {
+                chatSocket.emit('joinChat', chatId);
+                chatSocket.off('connect', handler);
+            };
+            chatSocket.on('connect', handler);
+        }
+    },
+
+    disconnectChatSocket: () => {
+        const { chatSocket } = get();
+        if (chatSocket) {
+            chatSocket.disconnect();
+            set({ chatSocket: null });
+        }
+    },
 }));
 
 export default useMessageStore;

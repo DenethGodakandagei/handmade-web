@@ -26,26 +26,56 @@ const Chat = ({ chatId, token, onClose, product, sellerName }) => {
     if (!chatId) return;
 
     const socket = connectSocket(token);
-    socket.emit("joinChat", chatId);
 
-    socket.on("receiveMessage", (msg) => {
-      setMessages((prev) => [...prev, msg]);
-    });
+    // join after connection established
+    const onConnect = () => {
+      socket.emit("joinChat", chatId);
+    };
+    socket.on("connect", onConnect);
+
+    const handleReceive = (msg) => {
+      // normalize sender to object for consistent rendering
+      const normalized = {
+        ...msg,
+        sender: typeof msg.sender === 'string' ? { _id: msg.sender } : msg.sender
+      };
+      setMessages((prev) => {
+        if (normalized._id && prev.some((m) => m._id === normalized._id)) return prev;
+        return [...prev, normalized];
+      });
+    };
+    socket.on("receiveMessage", handleReceive);
 
     getMessages(chatId)
       .then((res) => setMessages(res.data || []))
       .catch((err) => console.error("Load Error:", err));
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("receiveMessage", handleReceive);
+      // do not disconnect global socket - other components may rely on it
+    };
   }, [chatId, token]);
 
   const sendMessage = async () => {
     if (!text.trim() || !chatId || sending) return;
     try {
       setSending(true);
-      await sendMessageApi(chatId, text);
-      const socket = getSocket();
-      socket.emit("sendMessage", { chatId, content: text });
+      const res = await sendMessageApi(chatId, text);
+      let newMsg = res?.data;
+      if (!newMsg) {
+        newMsg = { chatId, content: text, sender: { _id: user?._id || "You" }, createdAt: new Date().toISOString() };
+      }
+      // ensure sender is object with _id for rendering logic
+      if (newMsg.sender && typeof newMsg.sender !== 'object') {
+        newMsg.sender = { _id: newMsg.sender };
+      }
+      if (!newMsg.sender) {
+        newMsg.sender = { _id: user?._id || "You" };
+      }
+      setMessages((prev) => [...prev, newMsg]);
+
+
       setText("");
       inputRef.current?.focus();
     } catch (error) {
@@ -139,10 +169,9 @@ const Chat = ({ chatId, token, onClose, product, sellerName }) => {
             </div>
           ) : (
             messages.map((m, i) => {
-              const isMe =
-                m.sender?._id === user?._id ||
-                m.sender?._id === JSON.parse(localStorage.getItem("user") ?? "{}")?._id ||
-                m.sender === "You";
+              // messages just added or coming from API may have sender as id or object
+              const senderId = m.sender?._id || m.sender;
+              const isMe = senderId && user?._id && senderId.toString() === user._id.toString();
               return (
                 <motion.div
                   key={i}
