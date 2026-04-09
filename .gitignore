@@ -1,27 +1,53 @@
-# Dependencies
+# --- Dependencies ---
 node_modules/
-**/node_modules/
+dist/
+build/
+.cache/
 
-# Production build
-/dist
-/build
-client/dist
-client/build
-
-# Environment variables
+# --- Environment & Keys ---
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
+*.pem
+*.key
 
-# Logs
+# --- Logs ---
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-logs/
-*.log
 
-# OS generated files
+# --- System Files ---
 .DS_Store
 Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# --- Testing ---
+coverage/
+.nyc_output/
+
+# --- Antigravity/AI ---
+.antigravity/
+.gemini/
+knowledge/
+brain/
+logs/
+artifacts/
+scratch/
+implementation_plan.md
+research_notes.md
+analysis_results.md
+walkthrough.md
+task.md
+merged_pr_*.md
+git_command_log.md
+terminal_output.md
+browser_recording_*.webp
+debug_log.txt
+temp_*/
+test_results_*.md
+experiment_*.md
+.antigravityignore
