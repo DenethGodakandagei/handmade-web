@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, AlertTriangle, Info } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import useAuthStore from '@/store/authStore';
+import { useAuth } from '@/context/AuthContext';
 import announcementService from '@/api/services/announcementService';
 
 const PRIORITY_STYLES = {
@@ -30,7 +30,7 @@ const EXPANDED_GAP = 45;
 const AnnouncementBanner = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
-  const { user } = useAuthStore();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchAnnouncements = async () => {

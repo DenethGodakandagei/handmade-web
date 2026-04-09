@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, User } from 'lucide-react';
-import useCartStore from '../store/cartStore';
-import useAuthStore from '../store/authStore';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -16,8 +16,8 @@ import {
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { openCart, items } = useCartStore();
-  const { user, logout, openAuthModal, isAuthenticated } = useAuthStore();
+  const { openCart, items } = useCart();
+  const { user, logout, openAuthModal, isAuthenticated } = useAuth();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleLogout = () => {
