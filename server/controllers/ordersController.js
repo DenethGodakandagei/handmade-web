@@ -199,3 +199,50 @@ export const updateOrderStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc      Delete order
+// @route     DELETE /api/v1/orders/:id
+// @access    Private/Admin
+export const deleteOrder = async (req, res, next) => {
+  try {
+    const order = await orderService.getOrderById(req.params.id);
+
+    if (!order) {
+      return next(new ErrorResponse('Order not found', 404));
+    }
+
+    // Check permissions (admin only for hard delete usually, or user if pending?)
+    // In this context, let's allow Admin for all, and User only if they own it and it's Pending.
+    if (req.user.role !== 'admin' && (order.user._id.toString() !== req.user.id || order.status !== 'Pending')) {
+      return next(new ErrorResponse('Not authorized to delete this order', 403));
+    }
+
+    // Restore stock and revert customization status if it was subtracted/marked and order not delivered/cancelled
+    if (order.status !== 'Delivered' && order.status !== 'Cancelled') {
+      const restorationPromises = order.products.map(async (item) => {
+        // Restore product stock
+        const product = await Product.findById(item.product);
+        if (product) {
+          product.stock += item.quantity;
+          await product.save();
+        }
+
+        // Revert CustomizationRequest "isPaid" status
+        if (item.customizationRequest) {
+          const customReq = await CustomizationRequest.findById(item.customizationRequest);
+          if (customReq) {
+            customReq.isPaid = false;
+            await customReq.save();
+          }
+        }
+      });
+      await Promise.all(restorationPromises);
+    }
+
+    await orderService.deleteOrder(req.params.id);
+
+    sendSuccess(res, 200, 'Order deleted', {});
+  } catch (err) {
+    next(err);
+  }
+};

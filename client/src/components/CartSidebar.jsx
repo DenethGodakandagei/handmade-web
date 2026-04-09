@@ -1,6 +1,6 @@
 import React from 'react';
 import { Minus, Plus, X } from 'lucide-react';
-import useCartStore from '../store/cartStore';
+import { useCart } from '../context/CartContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -17,13 +17,13 @@ const CartSidebar = () => {
     closeCart,
     items,
     removeFromCart,
-    updateQuantity
-  } = useCartStore();
+    updateQuantity,
+    subtotal,
+    shipping,
+    total
+  } = useCart();
 
   const validItems = Array.isArray(items) ? items.filter(item => item && item.product) : [];
-  const subtotal = validItems.reduce((sum, item) => sum + (item.product.price || 0) * (item.quantity || 1), 0);
-  const shipping = subtotal > 100 ? 0 : 12.99;
-  const total = subtotal + shipping;
 
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = React.useState(false);

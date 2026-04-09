@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import productService from '@/api/services/productService';
 import { Button } from '@/components/ui/button';
 import faqService from '@/api/services/faqService';
-import useCartStore from '@/store/cartStore';
+import { useCart } from '@/context/CartContext';
 
 const Home = () => {
    const [products, setProducts] = useState([]);
@@ -15,7 +15,7 @@ const Home = () => {
    const [activeFaq, setActiveFaq] = useState(null);
    const { scrollYProgress } = useScroll();
    const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-   const isCartOpen = useCartStore((state) => state.isCartOpen);
+   const { isCartOpen } = useCart();
 
    useEffect(() => {
       const fetchProducts = async () => {

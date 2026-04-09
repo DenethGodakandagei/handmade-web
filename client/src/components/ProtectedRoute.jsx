@@ -1,11 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import Spinner from '@/components/ui/Spinner';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-    const { isAuthenticated, user, fetchMe, logout } = useAuthStore();
+    const { isAuthenticated, user, fetchMe, logout } = useAuth();
     const [isChecking, setIsChecking] = useState(true);
     const location = useLocation();
 

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,13 @@ import { ArrowUpRight, Plus, Package, CreditCard, CheckCircle } from 'lucide-rea
 import { motion } from 'framer-motion';
 import customizationService from '../api/services/customizationService';
 import { useNavigate } from 'react-router-dom';
-import useCartStore from '../store/cartStore';
+import { useCart } from '../context/CartContext';
 
 const UserDashboard = () => {
     const [requests, setRequests] = useState([]);
 
     const navigate = useNavigate();
-    const { clearCart, addToCart } = useCartStore();
+    const { clearCart, addToCart } = useCart();
 
     useEffect(() => {
         const fetchRequests = async () => {

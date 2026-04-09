@@ -2,11 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ShoppingBag, ChevronDown, ChevronUp, Package, Clock,
-    Truck, CheckCircle, XCircle, RefreshCw, AlertCircle, ChevronRight
+    Truck, CheckCircle, XCircle, RefreshCw, AlertCircle, ChevronRight,
+    Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import orderService from '@/api/services/orderService';
-import useAuthStore from '@/store/authStore';
+import { useAuth } from '@/context/AuthContext';
 import Spinner from '@/components/ui/Spinner';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -122,7 +123,7 @@ const StatusUpdater = ({ orderId, currentStatus, onUpdated }) => {
 };
 
 // ─── Order Row ───────────────────────────────────────────────────────────────
-const OrderRow = ({ order, isSeller, isExpanded, onToggle, onStatusUpdate }) => {
+const OrderRow = ({ order, isSeller, isExpanded, onToggle, onStatusUpdate, onDelete }) => {
     const date = new Date(order.createdAt).toLocaleDateString('en-GB', {
         day: '2-digit', month: 'short', year: 'numeric',
     });
@@ -181,6 +182,17 @@ const OrderRow = ({ order, isSeller, isExpanded, onToggle, onStatusUpdate }) => 
                 <div className="w-24 flex-shrink-0 text-right">
                     <p className="text-[9px] uppercase tracking-widest text-gray-400 mb-0.5">Total</p>
                     <p className="text-sm font-semibold text-black">${Number(order.totalAmount).toFixed(2)}</p>
+                </div>
+
+                {/* Delete Button (visible to sellers or for pending user orders) */}
+                <div className="ml-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                    <button
+                        onClick={() => onDelete(order._id)}
+                        className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-sm transition-all"
+                        title="Delete Order"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
                 </div>
 
                 {/* Expand icon */}
@@ -302,7 +314,7 @@ const FilterTab = ({ label, count, active, onClick }) => (
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 const Orders = () => {
-    const { user } = useAuthStore();
+    const { user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -336,6 +348,18 @@ const Orders = () => {
         setOrders(prev =>
             prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o)
         );
+    };
+
+    const handleDelete = async (orderId) => {
+        if (!window.confirm("Are you sure you want to delete this order? This action cannot be undone and will restore product stock.")) return;
+        
+        try {
+            await orderService.delete(orderId);
+            toast.success("Order deleted successfully");
+            setOrders(prev => prev.filter(o => o._id !== orderId));
+        } catch (err) {
+            toast.error("Failed to delete order", { description: err?.message });
+        }
     };
 
     const filteredOrders = activeFilter === 'All'
@@ -435,6 +459,7 @@ const Orders = () => {
                             isExpanded={expandedId === order._id}
                             onToggle={() => setExpandedId(p => p === order._id ? null : order._id)}
                             onStatusUpdate={handleStatusUpdate}
+                            onDelete={handleDelete}
                         />
                     ))}
                 </div>

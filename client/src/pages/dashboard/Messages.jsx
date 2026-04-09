@@ -32,7 +32,6 @@ const getOtherParty = (chat, userId) => {
     return chat.artisan?._id === userId ? chat.customer : chat.artisan;
 };
 
-// ─── Message Context Menu ───────────────────────────────────────────────────
 
 const MessageMenu = ({ onEdit, onDelete, onReply, isOwn }) => (
     <motion.div
@@ -186,6 +185,7 @@ const Messages = () => {
         fetchMyChats, selectChat, sendChatMessage,
         editChatMessage, deleteChatMessage,
         editingMessageId, setEditingMessageId,
+        disconnectChatSocket,
     } = useMessageStore();
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -199,7 +199,13 @@ const Messages = () => {
 
     useEffect(() => {
         fetchMyChats();
-    }, [fetchMyChats]);
+        // ensure we have a socket connection for real-time updates
+        const { connectChatSocket } = useMessageStore.getState();
+        connectChatSocket();
+        return () => {
+            disconnectChatSocket();
+        };
+    }, [fetchMyChats, disconnectChatSocket]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

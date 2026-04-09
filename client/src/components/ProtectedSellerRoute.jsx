@@ -1,11 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import Spinner from '@/components/ui/Spinner';
 
 const ProtectedSellerRoute = ({ children }) => {
-    const { isAuthenticated, user, fetchMe } = useAuthStore();
+    const { isAuthenticated, user, fetchMe } = useAuth();
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {

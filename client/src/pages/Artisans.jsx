@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, MapPin, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import useAuthStore from '@/store/authStore';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import userService from '@/api/services/userService';
 import Spinner from '@/components/ui/Spinner';
 
 const Artisans = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, openAuthModal } = useAuthStore();
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [artisans, setArtisans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

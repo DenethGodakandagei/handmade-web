@@ -6,10 +6,22 @@ import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 /**
- * GET /api/v1/announcements/active
- * Returns active announcements matching the user's role.
- * - Logged-in users see announcements for their role + "all"
- * - Public users only see "all" announcements
+ * @swagger
+ * tags:
+ *   name: Announcements
+ *   description: Platform announcements
+ */
+
+/**
+ * @swagger
+ * /announcements/active:
+ *   get:
+ *     summary: Get active announcements
+ *     tags: [Announcements]
+ *     description: Returns active announcements matching the user's role. Logged-in users see announcements for their role + "all". Public users only see "all" announcements.
+ *     responses:
+ *       200:
+ *         description: List of active announcements
  */
 router.get('/active', async (req, res, next) => {
   try {
@@ -26,7 +38,7 @@ router.get('/active', async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         const decoded = jwt.default.verify(token, process.env.JWT_SECRET);
         userRole = decoded.role;
-      } catch {}
+      } catch { }
     }
 
     // Build audience filter

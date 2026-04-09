@@ -69,6 +69,31 @@ const options = {
                             }
                         }
                     }
+                },
+                Product: {
+                    type: 'object',
+                    properties: {
+                        _id: { type: 'string', example: '65f6c82bbd5e2a14e0a7f34c' },
+                        name: { type: 'string', example: 'Handcrafted Vase' },
+                        description: { type: 'string', example: 'A beautiful ceramic vase' },
+                        price: { type: 'number', example: 45.0 },
+                        stock: { type: 'integer', example: 10 },
+                        category: { type: 'string', example: '65f6c82bbd5e2a14e0a7f34b' },
+                        artisan: { type: 'string', example: '65f6c82bbd5e2a14e0a7f34c' },
+                        location: {
+                            type: 'object',
+                            properties: {
+                                district: { type: 'string', example: 'Colombo' },
+                                area: { type: 'string', example: 'Borella' }
+                            }
+                        },
+                        images: {
+                            type: 'array',
+                            items: { type: 'string' }
+                        },
+                        video: { type: 'string', nullable: true },
+                        averageRating: { type: 'number', example: 4.5 }
+                    }
                 }
             },
         },

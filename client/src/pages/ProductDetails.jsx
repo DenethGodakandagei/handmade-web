@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import Spinner from '@/components/ui/Spinner';
 
 // Hooks & Stores
-import useAuthStore from '../store/authStore';
-import useCartStore from '../store/cartStore';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import productService from '../api/services/productService';
 import { useCurrency } from '@/hooks/useCurrency';
 import { detectUserCountry } from '@/lib/geolocation';
@@ -26,8 +26,8 @@ import RelatedProducts from '../components/RelatedProducts';
 const ProductDetails = () => {
   const { id } = useParams();
   const location = useLocation();
-  const { items: cartItems, openCart } = useCartStore();
-  const { isAuthenticated, user } = useAuthStore();
+  const { items: cartItems, openCart } = useCart();
+  const { isAuthenticated, user } = useAuth();
 
   // Product State
   // Strategy: Check navigation state first (fastest), then Cart, then Fetch

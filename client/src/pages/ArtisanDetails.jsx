@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, ArrowLeft, Mail, Phone, Globe, Briefcase, Award, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import useAuthStore from '@/store/authStore';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import userService from '@/api/services/userService';
 import productService from '@/api/services/productService';
@@ -13,7 +13,7 @@ import ProductCard from '@/components/ProductCard';
 const ArtisanDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated } = useAuth();
     const [artisan, setArtisan] = useState(null);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);

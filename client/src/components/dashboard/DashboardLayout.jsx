@@ -5,11 +5,11 @@ import DashboardSidebar from './DashboardSidebar';
 import CommandPalette from './CommandPalette';
 import NotificationBell from './NotificationBell';
 import { Command, Search } from 'lucide-react';
-import useAuthStore from '@/store/authStore';
+import { useAuth } from '@/context/AuthContext';
 import AnnouncementBanner from './AnnouncementBanner';
 
 const DashboardLayout = () => {
-    const { user } = useAuthStore();
+    const { user } = useAuth();
     const isAdmin = user?.role === 'admin';
 
     return (

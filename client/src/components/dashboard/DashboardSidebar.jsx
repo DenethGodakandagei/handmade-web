@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 
 import { LayoutDashboard, Package, ShoppingBag, Store, Settings, LogOut, MessageSquare, Hammer, Activity, ShieldAlert, Database, BarChart3, Receipt, BoxSelect, SlidersHorizontal, History, Crosshair, Radio, Users, Terminal, Globe, Download, Eye, UserCheck, Megaphone, HelpCircle, Star } from 'lucide-react';
 
-import useAuthStore from '@/store/authStore';
+import { useAuth } from '@/context/AuthContext';
 
 const NavItem = ({ item }) => (
     <NavLink
@@ -37,7 +37,7 @@ const SectionLabel = ({ label }) => (
 );
 
 const DashboardSidebar = () => {
-    const { user, logout } = useAuthStore();
+    const { user, logout } = useAuth();
 
     const isAdmin = user?.role === 'admin';
 

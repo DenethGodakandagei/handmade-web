@@ -25,3 +25,7 @@ export const getAllOrders = async (query = {}) => {
 export const updateOrder = async (id, updateData) => {
     return await Order.findByIdAndUpdate(id, updateData, { new: true });
 }
+
+export const deleteOrder = async (id) => {
+    return await Order.findByIdAndDelete(id);
+}

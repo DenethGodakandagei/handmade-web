@@ -4,7 +4,7 @@ import { Star, Send, User, ChevronDown, ChevronUp, Pencil, Trash2, X, MessageSqu
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import reviewService from '../../api/services/reviewService';
-import useAuthStore from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 
 const StarRating = ({ rating, onRate, size = 20, interactive = false }) => {
     const [hovered, setHovered] = useState(0);
@@ -143,7 +143,7 @@ function getTimeAgo(date) {
 }
 
 const ReviewSection = ({ productId, averageRating }) => {
-    const { user, isAuthenticated } = useAuthStore();
+    const { user, isAuthenticated } = useAuth();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAll, setShowAll] = useState(false);

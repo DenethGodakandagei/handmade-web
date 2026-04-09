@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useNavigate } from 'react-router-dom';
-import useCartStore from '../store/cartStore';
+import { useCart } from '../context/CartContext';
 import orderService from '../api/services/orderService';
 import paymentService from '../api/services/paymentService';
 import { toast } from 'sonner';
@@ -51,7 +51,7 @@ const checkoutSchema = z.object({
 const CheckoutForm = () => {
   const stripe = useStripe();
   const elements = useElements();
-  const { items, clearCart } = useCartStore();
+  const { items, clearCart } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState('standard');
