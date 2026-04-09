@@ -55,14 +55,14 @@ import OrderSuccess from './pages/OrderSuccess';
 import OrderCancel from './pages/OrderCancel';
 import Contact from './pages/Contact';
 import Support from './pages/Support';
-import useAuthStore from './store/authStore';
+import { useAuth } from './context/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import CartSidebar from './components/CartSidebar';
 
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
 
   return (
     <div className="flex flex-col min-h-screen relative font-sans antialiased text-gray-900 selection:bg-primary/20 selection:text-primary">

@@ -1,9 +1,9 @@
 import React from 'react';
 import Sidebar from './Sidebar';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardLayout = ({ children }) => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   
   return (
     <div className="flex bg-[#F9F9F9] min-h-screen">

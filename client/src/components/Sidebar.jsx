@@ -8,13 +8,13 @@ import {
   Sparkles, Zap, HelpCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ role }) => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
+  const { logout } = useAuth();
 
   const artisanMenu = [
     { name: 'Workshop Overview', path: '/dashboard', icon: LayoutDashboard },

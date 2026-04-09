@@ -13,12 +13,12 @@ import {
    CardTitle,
 } from '@/components/ui/card';
 
-import useCartStore from '@/store/cartStore';
-import useAuthStore from '@/store/authStore';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useCartStore();
+  const { addToCart } = useCart();
 
    const [isAdding, setIsAdding] = useState(false);
 

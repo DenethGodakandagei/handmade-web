@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import authService from '@/api/services/authService';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '@/components/ui/Spinner';
@@ -25,7 +25,7 @@ const ArtisanApplication = () => {
   const [success, setSuccess] = React.useState(false);
   const [error, setError] = React.useState(null);
 
-  const { isAuthenticated, openAuthModal, user, fetchMe, updateUser } = useAuthStore();
+  const { isAuthenticated, openAuthModal, user, fetchMe, updateUser } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {

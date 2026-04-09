@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, MessageSquare, Package } from "lucide-react";
 import { connectSocket, getSocket } from "../lib/socket.js";
 import { getMessages, sendMessageApi } from "../api/axiosClient.js";
-import useAuthStore from "../store/authStore.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const formatTime = (iso) => {
   if (!iso) return "";
@@ -11,7 +11,7 @@ const formatTime = (iso) => {
 };
 
 const Chat = ({ chatId, token, onClose, product, sellerName }) => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);

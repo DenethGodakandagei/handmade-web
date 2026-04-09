@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, UserPlus, AlertCircle, Briefcase, ShoppingBag, Sparkles, Fingerprint } from 'lucide-react';
-import useAuthStore from '../store/authStore';
+import { useAuth } from '../context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,7 +16,7 @@ const Register = () => {
     confirmPassword: ''
   });
   const [passwordError, setPasswordError] = useState('');
-  const { register, loading, error, clearError } = useAuthStore();
+  const { register, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {

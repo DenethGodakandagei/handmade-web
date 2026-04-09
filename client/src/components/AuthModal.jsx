@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2, X } from 'lucide-react';
-import useAuthStore from '../store/authStore'; // Correct import path
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,7 +32,7 @@ const AuthModal = () => {
     register: registerUser,
     error: authError,
     isAuthenticated
-  } = useAuthStore();
+  } = useAuth();
 
   const [loading, setLoading] = useState(false);
 

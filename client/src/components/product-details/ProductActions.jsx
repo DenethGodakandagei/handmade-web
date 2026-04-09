@@ -4,7 +4,7 @@ import { Minus, Plus, Heart, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Spinner from '@/components/ui/Spinner';
 import { Link } from 'react-router-dom';
-import useCartStore from '../../store/cartStore';
+import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
 
 // API and Components
@@ -22,7 +22,7 @@ const ProductActions = ({
     const [showChatModal, setShowChatModal] = useState(false);
     const [chatId, setChatId] = useState(null);
 
-  const { addToCart } = useCartStore();
+  const { addToCart } = useCart();
 
    const handleChat = async () => {
       if (!user) {

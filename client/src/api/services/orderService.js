@@ -6,6 +6,7 @@ const orderService = {
   getAll: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
+  delete: (id) => api.delete(`/orders/${id}`),
 };
 
 export default orderService;
