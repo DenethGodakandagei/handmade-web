@@ -1,4 +1,5 @@
 {
     "testEnvironment": "node",
-    "transform": {}
+    "transform": {},
+    "testMatch": ["**/?(*.)+(spec|test).js"]
 }

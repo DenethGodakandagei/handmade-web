@@ -63,7 +63,7 @@ app.use(xss());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 mins
-  max: 500
+  max: process.env.NODE_ENV === 'development' ? 5000 : 500 // Higher limit for development/testing
 });
 app.use(limiter);
 
