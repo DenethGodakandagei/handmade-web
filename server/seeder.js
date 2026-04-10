@@ -54,7 +54,7 @@ const seedData = async () => {
                 name: 'Kasun Silva',
                 email: 'kasun@buyer.com',
                 password: 'password123',
-                role: 'buyer'
+                role: 'user'
             }
         ]);
 
