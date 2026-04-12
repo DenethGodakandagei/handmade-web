@@ -2,7 +2,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { LayoutDashboard, Package, ShoppingBag, Store, Settings, LogOut, MessageSquare, Hammer, Activity, ShieldAlert, Database, BarChart3, Receipt, BoxSelect, SlidersHorizontal, History, Crosshair, Radio, Users, Terminal, Globe, Download, Eye, UserCheck, Megaphone, HelpCircle, Star } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Store, Settings, LogOut, MessageSquare, Hammer, Activity, ShieldAlert, Database, BarChart3, Receipt, BoxSelect, SlidersHorizontal, History, Crosshair, Radio, Users, Terminal, Globe, Download, Eye, UserCheck, Megaphone, HelpCircle, Star, StickyNote } from 'lucide-react';
 
 import { useAuth } from '@/context/AuthContext';
 
@@ -49,6 +49,7 @@ const DashboardSidebar = () => {
             { icon: Star, label: 'Reviews', path: '/admin/reviews' },
             { icon: ShoppingBag, label: 'Orders', path: '/admin/orders' },
             { icon: Store, label: 'Users', path: '/admin/users' },
+            { icon: StickyNote, label: "Applications",path: '/admin/applications'},
             { icon: HelpCircle, label: 'FAQs', path: '/admin/faqs' },
         ],
         analytics: [
