@@ -5,7 +5,8 @@ import {
   LayoutDashboard, Users, ShoppingBag, Settings,
   LogOut, ChevronLeft, ChevronRight, Hammer,
   ShieldCheck, ArrowLeft, Package, User, Database,
-  Sparkles, Zap, HelpCircle
+  Sparkles, Zap, HelpCircle, SlidersHorizontal,
+  StickyNote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +29,7 @@ const Sidebar = ({ role }) => {
   const adminMenu = [
     { name: 'Security Core', path: '/admin', icon: ShieldCheck },
     { name: 'Identity Index', path: '/admin/users', icon: Users },
+    { name: 'Applications', path: '/admin/applications', icon: StickyNote },
     { name: 'Archive Control', path: '/admin/products', icon: Database },
     { name: 'Pulse Log', path: '/admin/orders', icon: Zap },
     { name: 'FAQ Registry', path: '/admin/faqs', icon: HelpCircle },
