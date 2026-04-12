@@ -7,7 +7,6 @@ import {
   ShieldCheck, ArrowLeft, Package, User, Database,
   Sparkles, Zap, HelpCircle
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ role }) => {
@@ -20,8 +19,8 @@ const Sidebar = ({ role }) => {
     { name: 'Workshop Overview', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Heritage archives', path: '/dashboard/products', icon: Package },
     { name: 'Succession orders', path: '/dashboard/orders', icon: ShoppingBag },
-    { name: 'Bespoke Requests', path: '/dashboard/customizations', icon: Sparkles },
-    { name: 'Master Identity', path: '/account', icon: User },
+    { name: 'Customization Requests', path: '/dashboard/customizations', icon: Sparkles },
+    { name: 'Master Identity', path: '/dashboard', icon: User },
     { name: 'Core Tuning', path: '/dashboard/settings', icon: Settings },
   ];
 
@@ -118,7 +117,7 @@ const Sidebar = ({ role }) => {
         <button
           onClick={() => {
             logout();
-            navigate('/login');
+            navigate('/');
           }}
           className="w-full flex items-center px-6 py-5 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-[2rem] group"
         >
