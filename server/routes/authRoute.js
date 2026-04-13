@@ -9,7 +9,10 @@ import {
   updateProfilePicture,
   updatePassword,
   logout,
-  becomeSeller
+  becomeSeller,
+  getAllApplications,
+  approveApplication,
+  rejectApplication
 } from '../controllers/authController.js';
 
 import { protect } from '../middleware/authMiddleware.js';
@@ -92,5 +95,8 @@ router.put('/updatepassword', protect, updatePassword);
 router.put('/becomeseller', protect, validate(becomeSellerSchema), becomeSeller);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
+router.get('/applications', protect, getAllApplications);
+router.put('/applications/:id/approve', protect, approveApplication);
+router.put('/applications/:id/reject', protect, rejectApplication);
 
 export default router;

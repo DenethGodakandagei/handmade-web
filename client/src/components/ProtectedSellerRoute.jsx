@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -30,8 +29,8 @@ const ProtectedSellerRoute = ({ children }) => {
         return <Navigate to="/" replace />;
     }
 
-    // Strict check: must be a seller AND approved
-    if (!user || user.sellerRequestStatus !== 'approved') {
+    // Strict check: must be a seller AND approved, OR explicitly have the artisan role
+    if (!user || (user.role !== 'artisan' && user.sellerRequestStatus !== 'approved')) {
         return <Navigate to="/artisans/apply" replace />;
     }
 

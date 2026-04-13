@@ -5,9 +5,9 @@ import {
   LayoutDashboard, Users, ShoppingBag, Settings,
   LogOut, ChevronLeft, ChevronRight, Hammer,
   ShieldCheck, ArrowLeft, Package, User, Database,
-  Sparkles, Zap, HelpCircle
+  Sparkles, Zap, HelpCircle, SlidersHorizontal,
+  StickyNote
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ role }) => {
@@ -20,14 +20,15 @@ const Sidebar = ({ role }) => {
     { name: 'Workshop Overview', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Heritage archives', path: '/dashboard/products', icon: Package },
     { name: 'Succession orders', path: '/dashboard/orders', icon: ShoppingBag },
-    { name: 'Bespoke Requests', path: '/dashboard/customizations', icon: Sparkles },
-    { name: 'Master Identity', path: '/account', icon: User },
+    { name: 'Customization Requests', path: '/dashboard/customizations', icon: Sparkles },
+    { name: 'Master Identity', path: '/dashboard', icon: User },
     { name: 'Core Tuning', path: '/dashboard/settings', icon: Settings },
   ];
 
   const adminMenu = [
     { name: 'Security Core', path: '/admin', icon: ShieldCheck },
     { name: 'Identity Index', path: '/admin/users', icon: Users },
+    { name: 'Applications', path: '/admin/applications', icon: StickyNote },
     { name: 'Archive Control', path: '/admin/products', icon: Database },
     { name: 'Pulse Log', path: '/admin/orders', icon: Zap },
     { name: 'FAQ Registry', path: '/admin/faqs', icon: HelpCircle },
@@ -118,7 +119,7 @@ const Sidebar = ({ role }) => {
         <button
           onClick={() => {
             logout();
-            navigate('/login');
+            navigate('/');
           }}
           className="w-full flex items-center px-6 py-5 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-[2rem] group"
         >

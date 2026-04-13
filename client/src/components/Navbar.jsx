@@ -67,15 +67,10 @@ const Navbar = () => {
                 </SheetDescription>
               </SheetHeader>
               <div className="flex flex-col gap-6">
-                <Link to="/" className="text-2xl font-light tracking-tight">Index</Link>
                 <Link to="/collection" className="text-2xl font-light tracking-tight">Collection</Link>
-                <Link to="/about" className="text-2xl font-light tracking-tight">Philosophy</Link>
-                <div className="h-px bg-gray-100 my-2" />
-                {!isAuthenticated && (
-                  <button onClick={() => openAuthModal('login')} className="text-sm font-medium uppercase tracking-widest text-left">
-                    Account
-                  </button>
-                )}
+                <Link to="/artisans" className="text-2xl font-light tracking-tight">Artisans</Link>
+                <Link to="/artisans/apply" className="text-2xl font-light tracking-tight">Apply</Link>
+
               </div>
             </SheetContent>
           </Sheet>
@@ -114,11 +109,10 @@ const Navbar = () => {
                 </SheetHeader>
 
                 <div className="flex-1 flex flex-col space-y-8">
-                  <Link onClick={() => setIsSheetOpen(false)} to={user?.role === 'admin' ? '/admin' : (user?.sellerRequestStatus === 'approved' ? '/dashboard' : '/account')} className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">
-                    {user?.role === 'admin' ? 'Admin Core' : (user?.sellerRequestStatus === 'approved' ? 'Dashboard' : 'My Account')}
+                  <Link onClick={() => setIsSheetOpen(false)} to={user?.role === 'admin' ? '/admin' : '/dashboard'} className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">
+                    Profile
                   </Link>
-                  <Link onClick={() => setIsSheetOpen(false)} to="/profile" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 cursor-pointer">Profile</Link>
-                  {user?.role !== 'admin' && (
+                  {user?.role === 'user' && (
                     <Link onClick={() => setIsSheetOpen(false)} to="/artisans/apply" className="text-xl font-light hover:translate-x-2 transition-transform duration-300 opacity-50 cursor-pointer">Sell on Guild</Link>
                   )}
                 </div>

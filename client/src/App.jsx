@@ -6,14 +6,13 @@ import Home from './pages/Home';
 import Artisans from './pages/Artisans';
 import ArtisanDetails from './pages/ArtisanDetails';
 import ArtisanApplication from './pages/ArtisanApplication';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import ProductList from './pages/ProductList';
 import ProductDetails from './pages/ProductDetails';
 import RequestCustomization from './pages/RequestCustomization';
 import ProtectedSellerRoute from './components/ProtectedSellerRoute';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import Overview from './pages/dashboard/Overview';
+import UserOverview from './pages/dashboard/UserOverview';
 import Products from './pages/dashboard/Products';
 import Orders from './pages/dashboard/Orders';
 import Settings from './pages/dashboard/Settings';
@@ -48,6 +47,7 @@ import AdminVerification from './pages/admin/AdminVerification';
 import AdminBroadcast from './pages/admin/AdminBroadcast';
 import AdminUserProfile from './pages/admin/AdminUserProfile';
 import AdminFaqs from './pages/admin/AdminFaqs';
+import AdminApplications from './pages/admin/AdminApplications';
 import UserDashboard from './pages/UserDashboard';
 import Checkout from './pages/Checkout';
 import OrderHistory from './pages/OrderHistory';
@@ -118,9 +118,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                {user?.role === 'admin' ? <Navigate to="/admin" replace /> : (user?.role === 'artisan' || user?.sellerRequestStatus === 'approved' ? <Navigate to="/dashboard" replace /> : <Navigate to="/account" replace />)}
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
-        {/* /dashboard/orders — accessible to ALL logged-in users (buyers + sellers) */}
+        {/* Unified Dashboard Layout Route */}
         <Route
           path="/dashboard"
           element={
@@ -129,31 +137,21 @@ function App() {
             </ProtectedRoute>
           }
         >
+          <Route index element={(user?.role === 'artisan' || user?.sellerRequestStatus === 'approved') ? <Overview /> : <UserOverview />} />
           <Route path="orders" element={<Orders />} />
           <Route path="messages" element={<Message />} />
-        </Route>
+          <Route path="customizations" element={(user?.role === 'artisan' || user?.sellerRequestStatus === 'approved') ? <Customizations /> : <UserDashboard />} />
 
-        {/* Full Dashboard — sellers/artisans only */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedSellerRoute>
-              <DashboardLayout />
-            </ProtectedSellerRoute>
-          }
-        >
-          <Route index element={<Overview />} />
-          <Route path="products" element={<Products />} />
-          <Route path="products/add" element={<AddProduct />} />
-          <Route path="products/edit/:id" element={<AddProduct />} />
-          <Route path="reviews" element={<DashboardReviews />} />
-          <Route path="reviews/add" element={<AddReview />} />
-          <Route path="reviews/edit/:id" element={<AddReview />} />
-          <Route path="reviews/view/:id" element={<AddReview />} />
-          <Route path="customizations" element={<Customizations />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="storefront" element={<Storefront />} />
-
+          {/* Full Dashboard — sellers/artisans only */}
+          <Route path="products" element={<ProtectedSellerRoute><Products /></ProtectedSellerRoute>} />
+          <Route path="products/add" element={<ProtectedSellerRoute><AddProduct /></ProtectedSellerRoute>} />
+          <Route path="products/edit/:id" element={<ProtectedSellerRoute><AddProduct /></ProtectedSellerRoute>} />
+          <Route path="reviews" element={<ProtectedSellerRoute><DashboardReviews /></ProtectedSellerRoute>} />
+          <Route path="reviews/add" element={<ProtectedSellerRoute><AddReview /></ProtectedSellerRoute>} />
+          <Route path="reviews/edit/:id" element={<ProtectedSellerRoute><AddReview /></ProtectedSellerRoute>} />
+          <Route path="reviews/view/:id" element={<ProtectedSellerRoute><AddReview /></ProtectedSellerRoute>} />
+          <Route path="settings" element={<ProtectedSellerRoute><Settings /></ProtectedSellerRoute>} />
+          <Route path="storefront" element={<ProtectedSellerRoute><Storefront /></ProtectedSellerRoute>} />
         </Route>
 
 // Import removed since we reuse DashboardLayout
@@ -190,6 +188,7 @@ function App() {
           <Route path="verification" element={<AdminVerification />} />
           <Route path="broadcast" element={<AdminBroadcast />} />
           <Route path="faqs" element={<AdminFaqs />} />
+          <Route path="applications" element={<AdminApplications />} />
           <Route path="users/:id" element={<AdminUserProfile />} />
         </Route>
 
