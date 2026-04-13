@@ -30,7 +30,7 @@ const ArtisanSection = ({ artisan, artisanId }) => {
                         <img 
                           src={artisanImage} 
                           alt={artisanName} 
-                          className="w-full h-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+                          className="w-full h-full object-cover"
                         />
                      </div>
                      

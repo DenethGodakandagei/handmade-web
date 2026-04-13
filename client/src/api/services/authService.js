@@ -9,6 +9,9 @@ const authService = {
   updateProfilePicture: (formData) => api.put('/auth/updateprofilepicture', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  getAllApplications: () => api.get('/auth/applications'),
+  approveApplication: (id) => api.put(`/auth/applications/${id}/approve`),
+  rejectApplication: (id) => api.put(`/auth/applications/${id}/reject`),
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

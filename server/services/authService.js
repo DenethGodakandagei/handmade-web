@@ -55,7 +55,7 @@ export const updateUserPassword = async (id, currentPassword, newPassword) => {
 export const becomeSeller = async (id, applicationData) => {
   // Check if user has already applied
   const user = await User.findById(id);
-  
+
   if (user.sellerRequestStatus === 'pending') {
     throw new Error('You have already submitted an application. Please wait for approval.');
   }
@@ -82,9 +82,35 @@ export const becomeSeller = async (id, applicationData) => {
     experience,
     skills
   };
-  
+
   return await User.findByIdAndUpdate(id, fieldsToUpdate, {
     new: true,
     runValidators: true
   });
+};
+
+export const getAllApplications = async () => {
+  return await User.find({ sellerRequestStatus: 'pending' });
+};
+
+export const approveApplication = async (id) => {
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      sellerRequestStatus: 'approved',
+      role: 'artisan',
+      isSeller: true
+    },
+    { new: true, runValidators: true }
+  );
+  return user;
+};
+
+export const rejectApplication = async (id) => {
+  const user = await User.findByIdAndUpdate(
+    id,
+    { sellerRequestStatus: 'rejected' },
+    { new: true, runValidators: true }
+  );
+  return user;
 };

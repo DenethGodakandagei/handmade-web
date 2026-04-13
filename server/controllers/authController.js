@@ -205,6 +205,35 @@ export const becomeSeller = async (req, res, next) => {
   }
 };
 
+export const getAllApplications = async (req, res, next) => {
+  try {
+    const users = await authService.getAllApplications();
+    sendSuccess(res, 200, 'Applications retrieved', users);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const approveApplication = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await authService.approveApplication(id);
+    sendSuccess(res, 200, 'Application approved', user);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const rejectApplication = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await authService.rejectApplication(id);
+    sendSuccess(res, 200, 'Application rejected', user);
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res, req) => {
   const token = user.getSignedJwtToken();
