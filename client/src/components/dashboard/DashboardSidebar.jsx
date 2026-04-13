@@ -79,8 +79,8 @@ const DashboardSidebar = () => {
         ]
     };
 
-    // ─── Seller / User navigation ───
-    const userNav = [
+    // ─── Seller navigation ───
+    const artisanNav = [
         { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
         { icon: Package, label: 'Products', path: '/dashboard/products' },
         { icon: Star, label: 'Reviews', path: '/dashboard/reviews' },
@@ -90,6 +90,16 @@ const DashboardSidebar = () => {
         { icon: Store, label: 'Storefront', path: '/dashboard/storefront' },
         { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
     ];
+
+    // ─── Regular User navigation ───
+    const regularUserNav = [
+        { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
+        { icon: ShoppingBag, label: 'Orders', path: '/dashboard/orders' },
+        { icon: Hammer, label: 'Customizations', path: '/dashboard/customizations' },
+    ];
+
+    const isArtisan = user?.role === 'artisan' || user?.sellerRequestStatus === 'approved';
+    const currentUserNav = isArtisan ? artisanNav : regularUserNav;
 
     return (
         <aside className="w-64 border-r border-gray-100 min-h-screen bg-white hidden md:flex flex-col fixed left-0 top-0 bottom-0 z-40">
@@ -136,7 +146,7 @@ const DashboardSidebar = () => {
                     </>
                 ) : (
                     <div className="space-y-0.5">
-                        {userNav.map(item => <NavItem key={item.path} item={item} />)}
+                        {currentUserNav.map(item => <NavItem key={item.path} item={item} />)}
                     </div>
                 )}
             </div>

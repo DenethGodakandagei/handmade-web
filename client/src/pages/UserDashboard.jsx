@@ -44,8 +44,8 @@ const UserDashboard = () => {
         navigate('/checkout');
     };
     return (
-        <div className="min-h-screen bg-white text-black pt-32 px-6 md:px-12 pb-24">
-            <DashboardHeader title="My Account" subtitle="Manage your orders and requests" />
+        <div className="space-y-8">
+            <DashboardHeader title="Bespoke Requests" subtitle="Manage your custom artifact commissions" />
 
             {/* Quick Actions */}
             <motion.section
@@ -120,16 +120,7 @@ const UserDashboard = () => {
                     </div>
                 </div>
 
-                <div className="border-t border-gray-100 pt-12">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-2xl font-light">My Orders.</h3>
-                    </div>
-                    <div className="space-y-4">
-                        <Button variant="outline" className="w-full md:w-auto h-16 border-gray-200 text-black hover:bg-gray-50 rounded-none uppercase tracking-[0.2em] px-12 text-xs font-bold transition-all" onClick={() => window.location.href = '/dashboard/orders'}>
-                            View Order History <ArrowUpRight className="w-4 h-4 ml-2" />
-                        </Button>
-                    </div>
-                </div>
+
             </motion.section>
         </div>
     );

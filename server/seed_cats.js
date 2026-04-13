@@ -6,14 +6,16 @@ import Category from './models/CategoryModel.js';
 dotenv.config();
 
 const categories = [
-    "Art & Crafts",
-    "Home Decor",
-    "Kitchen & Dining",
-    "Jewelry & Accessories",
-    "Bags & Textiles",
-    "Eco Products",
-    "Cultural Crafts",
-    "Custom Products"
+    "Pottery & Ceramics",
+    "Woodwork & Carving",
+    "Textiles & Weaving",
+    "Handmade Jewelry",
+    "Leathercrafts",
+    "Glass Art",
+    "Metalwork & Sculptures",
+    "Candles & Soaps",
+    "Fine Art & Paintings",
+    "Home Decor & Accessories"
 ];
 
 const seedCategories = async () => {
