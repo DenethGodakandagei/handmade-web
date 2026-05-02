@@ -5,7 +5,8 @@ import {
   getMessagesService,
   editMessageService,
   deleteMessageService,
-  getMyChatsService
+  getMyChatsService,
+  deleteChatService
 } from "../services/chatService.js";
 import { getIO } from "../utils/socket.js";
 
@@ -89,4 +90,16 @@ export const deleteMessage = asyncHandler(async (req, res) => {
   io.emit("messageDeleted", { messageId: req.params.messageId });
 
   res.status(200).json({ success: true, message: "Message deleted" });
+});
+
+/**
+ * @desc Delete chat
+ */
+export const deleteChat = asyncHandler(async (req, res) => {
+  await deleteChatService(req.params.chatId, req.user.id);
+
+  const io = getIO();
+  io.emit("chatDeleted", { chatId: req.params.chatId });
+
+  res.status(200).json({ success: true, message: "Chat deleted" });
 });

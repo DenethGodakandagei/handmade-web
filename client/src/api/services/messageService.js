@@ -40,6 +40,10 @@ const messageService = {
         const response = await api.delete(`/chat/message/${messageId}`);
         return response;
     },
+    deleteChat: async (chatId) => {
+        const response = await api.delete(`/chat/${chatId}`);
+        return response;
+    },
 };
 
 export default messageService;

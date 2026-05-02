@@ -125,7 +125,15 @@ const useMessageStore = create((set, get) => ({
         try {
             const response = await messageService.getMyChats();
             const data = response?.data ?? response ?? [];
-            set({ chatList: Array.isArray(data) ? data : [] });
+            const chats = Array.isArray(data) ? data : [];
+            set({ chatList: chats });
+
+            // Join rooms for all current chats to receive real-time updates
+            if (chats.length > 0) {
+                const { connectChatSocket, joinChatRoom } = get();
+                connectChatSocket();
+                chats.forEach(chat => joinChatRoom(chat._id));
+            }
         } catch (error) {
             console.error('Failed to fetch chats:', error);
             set({ chatList: [] });
@@ -165,7 +173,13 @@ const useMessageStore = create((set, get) => ({
         try {
             const response = await messageService.sendChatMessage(selectedChat._id, content);
             const newMsg = response?.data ?? response;
-            set({ chatMessages: [...chatMessages, newMsg] });
+            
+            set((state) => {
+                // Prevent duplicates if socket already added it
+                if (newMsg._id && state.chatMessages.some(m => m._id === newMsg._id)) return state;
+                return { chatMessages: [...state.chatMessages, newMsg] };
+            });
+
             // Update lastMessage in the chat list
             set((state) => ({
                 chatList: state.chatList.map(c =>
@@ -203,6 +217,20 @@ const useMessageStore = create((set, get) => ({
         }
     },
 
+    deleteChat: async (chatId) => {
+        const { chatList, selectedChat } = get();
+        try {
+            await messageService.deleteChat(chatId);
+            set({
+                chatList: chatList.filter(c => c._id !== chatId),
+                selectedChat: selectedChat?._id === chatId ? null : selectedChat,
+                chatMessages: selectedChat?._id === chatId ? [] : get().chatMessages
+            });
+        } catch (error) {
+            console.error('Failed to delete chat:', error);
+        }
+    },
+
     setEditingMessageId: (id) => set({ editingMessageId: id }),
     connectChatSocket: () => {
         const { chatSocket } = get();
@@ -216,12 +244,26 @@ const useMessageStore = create((set, get) => ({
         });
 
         newSocket.on('receiveMessage', (msg) => {
-            const { selectedChat, chatMessages } = get();
-            if (selectedChat && msg.chatId === selectedChat._id) {
-                // ignore duplicates (e.g. message originated from this client)
+            const { selectedChat, chatMessages, chatList } = get();
+            const msgChatId = msg.chat?._id || msg.chat;
+            
+            // 1. Update the message list if this chat is selected
+            if (selectedChat && msgChatId === selectedChat._id) {
                 if (msg._id && chatMessages.some(m => m._id === msg._id)) return;
                 set({ chatMessages: [...chatMessages, msg] });
             }
+            
+            // 2. Update the chat list (sidebar) with the last message preview and re-sort
+            const updatedList = chatList.map(c => 
+                c._id === msgChatId 
+                    ? { ...c, lastMessage: msg.content, updatedAt: msg.createdAt || new Date().toISOString() } 
+                    : c
+            );
+            
+            // Sort by updatedAt descending so active chats move to top
+            set({ 
+                chatList: [...updatedList].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)) 
+            });
         });
 
         newSocket.on('messageEdited', (msg) => {
@@ -242,15 +284,13 @@ const useMessageStore = create((set, get) => ({
     joinChatRoom: (chatId) => {
         const { chatSocket } = get();
         if (!chatSocket) return;
+        
+        const emitJoin = () => chatSocket.emit('joinChat', chatId);
+
         if (chatSocket.connected) {
-            chatSocket.emit('joinChat', chatId);
+            emitJoin();
         } else {
-            // wait until connection before joining
-            const handler = () => {
-                chatSocket.emit('joinChat', chatId);
-                chatSocket.off('connect', handler);
-            };
-            chatSocket.on('connect', handler);
+            chatSocket.once('connect', emitJoin); // Use once to avoid multiple listeners
         }
     },
 

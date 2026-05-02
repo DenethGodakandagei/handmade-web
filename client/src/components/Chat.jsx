@@ -10,8 +10,9 @@ const formatTime = (iso) => {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const Chat = ({ chatId, token, onClose, product, sellerName }) => {
-  const { user } = useAuth();
+const Chat = ({ chatId, token: propToken, onClose, product, sellerName }) => {
+  const { user, token: authToken } = useAuth();
+  const token = propToken || authToken || localStorage.getItem("token");
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -31,9 +32,17 @@ const Chat = ({ chatId, token, onClose, product, sellerName }) => {
     const onConnect = () => {
       socket.emit("joinChat", chatId);
     };
+
+    if (socket.connected) {
+      onConnect();
+    }
     socket.on("connect", onConnect);
 
     const handleReceive = (msg) => {
+      // Ensure message belongs to this chat
+      const msgChatId = msg.chat?._id || msg.chat;
+      if (msgChatId !== chatId) return;
+
       // normalize sender to object for consistent rendering
       const normalized = {
         ...msg,
@@ -62,18 +71,24 @@ const Chat = ({ chatId, token, onClose, product, sellerName }) => {
     try {
       setSending(true);
       const res = await sendMessageApi(chatId, text);
+      const userId = user?._id || user?.id; // Robust ID fetch
       let newMsg = res?.data;
       if (!newMsg) {
-        newMsg = { chatId, content: text, sender: { _id: user?._id || "You" }, createdAt: new Date().toISOString() };
+        newMsg = { chatId, content: text, sender: { _id: userId || "You" }, createdAt: new Date().toISOString() };
       }
       // ensure sender is object with _id for rendering logic
       if (newMsg.sender && typeof newMsg.sender !== 'object') {
         newMsg.sender = { _id: newMsg.sender };
       }
       if (!newMsg.sender) {
-        newMsg.sender = { _id: user?._id || "You" };
+        newMsg.sender = { _id: userId || "You" };
       }
-      setMessages((prev) => [...prev, newMsg]);
+      
+      setMessages((prev) => {
+        // Prevent duplicates if socket already added it
+        if (newMsg._id && prev.some(m => m._id === newMsg._id)) return prev;
+        return [...prev, newMsg];
+      });
 
 
       setText("");
@@ -170,8 +185,10 @@ const Chat = ({ chatId, token, onClose, product, sellerName }) => {
           ) : (
             messages.map((m, i) => {
               // messages just added or coming from API may have sender as id or object
-              const senderId = m.sender?._id || m.sender;
-              const isMe = senderId && user?._id && senderId.toString() === user._id.toString();
+              const senderId = m.sender?._id || m.sender?.id || m.sender;
+              const currentUserId = user?._id || user?.id;
+              
+              const isMe = senderId && currentUserId && senderId.toString() === currentUserId.toString();
               return (
                 <motion.div
                   key={i}

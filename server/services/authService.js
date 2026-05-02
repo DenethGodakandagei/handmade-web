@@ -5,7 +5,7 @@ export const registerUser = async (userData) => {
   // Create user
   const user = await User.create({
     name,
-    email,
+    email: email.toLowerCase().trim(),
     password,
     role
   });
@@ -13,14 +13,18 @@ export const registerUser = async (userData) => {
 };
 
 export const loginUser = async (email, password) => {
+  const cleanEmail = email.toLowerCase().trim();
   // Check for user
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email: cleanEmail }).select('+password');
   if (!user) {
+    console.log(`[DEBUG] Login attempt for ${cleanEmail}: User NOT found`);
     throw new Error('Invalid credentials');
   }
 
   // Check if password matches
   const isMatch = await user.matchPassword(password);
+  console.log(`[DEBUG] Login attempt for ${cleanEmail}: User Found, Password Match: ${isMatch}`);
+
   if (!isMatch) {
     throw new Error('Invalid credentials');
   }

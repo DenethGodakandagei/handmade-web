@@ -108,12 +108,14 @@ const ProductDetails = () => {
   );
 
   // Derived Data
-  const artisan = product.artisan || {
-     name: "Unknown Artisan",
-     image: "/images/placeholder-artisan.jpg",
-     location: product.location?.area || "Sri Lanka",
-     bio: "A master craftsman dedicated to preserving traditional techniques."
-  };
+  const artisan = (typeof product.artisan === 'object' && product.artisan !== null) 
+    ? product.artisan 
+    : {
+        name: "Unknown Artisan",
+        image: "/images/placeholder-artisan.jpg",
+        location: product.location?.area || "Sri Lanka",
+        bio: "A master craftsman dedicated to preserving traditional techniques."
+      };
 
   const stock = (product.stock || product.countInStock) > 0 ? (product.stock || product.countInStock) : 50;
   const artisanId = location.state?.artisanId || (typeof product.artisan === 'object' ? product.artisan?._id : null);

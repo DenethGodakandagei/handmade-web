@@ -74,3 +74,17 @@ export const deleteMessageService = async (messageId, userId) => {
 
   await message.deleteOne();
 };
+
+export const deleteChatService = async (chatId, userId) => {
+  const chat = await Chat.findOne({
+    _id: chatId,
+    $or: [{ customer: userId }, { artisan: userId }]
+  });
+
+  if (!chat) throw new Error("Chat not found or unauthorized");
+
+  // Delete all messages in the chat
+  await Message.deleteMany({ chat: chatId });
+  // Delete the chat itself
+  await chat.deleteOne();
+};

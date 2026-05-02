@@ -5,14 +5,17 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUpRight, Plus, Package, CreditCard, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import customizationService from '../api/services/customizationService';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { MessageSquare, ArrowUpRight, Plus, Package, CreditCard, CheckCircle } from 'lucide-react';
+import useMessageStore from '../store/messageStore';
 
 const UserDashboard = () => {
     const [requests, setRequests] = useState([]);
+    const { chatList, fetchMyChats, loadingChats } = useMessageStore();
+    const { user } = useAuth();
 
     const navigate = useNavigate();
     const { clearCart, addToCart } = useCart();
@@ -27,7 +30,13 @@ const UserDashboard = () => {
             }
         };
         fetchRequests();
-    }, []);
+        fetchMyChats();
+    }, [fetchMyChats]);
+
+    const getOtherParty = (chat, userId) => {
+        if (!chat || !userId) return null;
+        return chat.artisan?._id === userId ? chat.customer : chat.artisan;
+    };
 
     const handleCheckoutCustomRequest = (req) => {
         clearCart();
@@ -115,6 +124,55 @@ const UserDashboard = () => {
                                 </div>
                                 <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">No active requests</p>
                                 <p className="text-gray-300 text-[10px]">Start a custom order from any product page</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* My Chats Section */}
+                <div className="border-t border-gray-100 pt-12">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-2xl font-light">My Chats.</h3>
+                        <Button 
+                            variant="link" 
+                            onClick={() => navigate('/dashboard/messages')}
+                            className="text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-black transition-colors"
+                        >
+                            View All Messages <ArrowUpRight size={14} className="ml-1" />
+                        </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {chatList.length > 0 ? (
+                            chatList.slice(0, 3).map((chat) => {
+                                const other = getOtherParty(chat, user?._id);
+                                return (
+                                    <div 
+                                        key={chat._id} 
+                                        onClick={() => navigate('/dashboard/messages')}
+                                        className="p-5 border border-gray-100 rounded-xl hover:border-black transition-all cursor-pointer group flex items-center space-x-4 bg-white"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 font-semibold text-lg border border-gray-100 group-hover:bg-black group-hover:text-white transition-colors">
+                                            {other?.name?.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <h4 className="font-bold text-[11px] uppercase tracking-wider truncate mr-2">{other?.name || 'Unknown'}</h4>
+                                                <span className="text-[9px] text-gray-400 font-mono whitespace-nowrap">
+                                                    {chat.updatedAt ? new Date(chat.updatedAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
+                                                </span>
+                                            </div>
+                                            <p className="text-[11px] text-gray-400 truncate pr-4 italic">
+                                                {chat.lastMessage || 'Start a conversation'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="col-span-full h-32 flex flex-col items-center justify-center border border-dashed border-gray-200 rounded-xl text-center p-6 bg-gray-50/30">
+                                <MessageSquare className="w-5 h-5 text-gray-300 mb-2" />
+                                <p className="text-gray-400 text-[10px] uppercase tracking-widest">No conversations yet</p>
                             </div>
                         )}
                     </div>

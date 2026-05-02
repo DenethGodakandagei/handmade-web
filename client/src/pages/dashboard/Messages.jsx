@@ -7,7 +7,7 @@ import {
 import Spinner from '@/components/ui/Spinner';
 import DashboardHeader from '../../components/dashboard/DashboardHeader';
 import useMessageStore from '../../store/messageStore';
-import useAuthStore from '../../store/authStore';
+import { useAuth } from '../../context/AuthContext';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -139,7 +139,7 @@ const MessageRow = ({ msg, isOwn, onEdit, onDelete, onReply, replyPreview }) => 
 
 // ─── Delete Confirm Dialog ───────────────────────────────────────────────────
 
-const DeleteDialog = ({ onConfirm, onCancel }) => (
+const DeleteDialog = ({ title, subtitle, onConfirm, onCancel }) => (
     <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -155,8 +155,8 @@ const DeleteDialog = ({ onConfirm, onCancel }) => (
             <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
                 <Trash2 size={20} className="text-red-500" />
             </div>
-            <h3 className="text-base font-semibold text-center text-black mb-1">Delete message?</h3>
-            <p className="text-sm text-gray-500 text-center mb-5">This action cannot be undone.</p>
+            <h3 className="text-base font-semibold text-center text-black mb-1">{title || 'Delete?'}</h3>
+            <p className="text-sm text-gray-500 text-center mb-5">{subtitle || 'This action cannot be undone.'}</p>
             <div className="flex gap-3">
                 <button
                     onClick={onCancel}
@@ -178,12 +178,13 @@ const DeleteDialog = ({ onConfirm, onCancel }) => (
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 const Messages = () => {
-    const { user } = useAuthStore();
+    const { user } = useAuth();
     const {
         chatList, selectedChat, chatMessages,
         loadingChats, loadingChatMessages, sendingChatMessage,
         fetchMyChats, selectChat, sendChatMessage,
         editChatMessage, deleteChatMessage,
+        deleteChat,
         editingMessageId, setEditingMessageId,
         disconnectChatSocket,
     } = useMessageStore();
@@ -193,6 +194,7 @@ const Messages = () => {
     const [replyTo, setReplyTo] = useState(null); // { _id, content }
     const [editText, setEditText] = useState('');
     const [deleteTargetId, setDeleteTargetId] = useState(null);
+    const [deleteChatTargetId, setDeleteChatTargetId] = useState(null);
     const [showMobileList, setShowMobileList] = useState(true);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
@@ -246,6 +248,12 @@ const Messages = () => {
         setDeleteTargetId(null);
     };
 
+    const handleDeleteChatConfirm = async () => {
+        if (!deleteChatTargetId) return;
+        await deleteChat(deleteChatTargetId);
+        setDeleteChatTargetId(null);
+    };
+
     const filteredChats = chatList.filter(chat => {
         const other = getOtherParty(chat, user?._id);
         return (
@@ -259,8 +267,18 @@ const Messages = () => {
             <AnimatePresence>
                 {deleteTargetId && (
                     <DeleteDialog
+                        title="Delete message?"
+                        subtitle="This specific message will be removed from the conversation."
                         onConfirm={handleDeleteConfirm}
                         onCancel={() => setDeleteTargetId(null)}
+                    />
+                )}
+                {deleteChatTargetId && (
+                    <DeleteDialog
+                        title="Delete conversation?"
+                        subtitle="This will permanently remove the entire chat history for both parties."
+                        onConfirm={handleDeleteChatConfirm}
+                        onCancel={() => setDeleteChatTargetId(null)}
                     />
                 )}
             </AnimatePresence>
@@ -307,29 +325,43 @@ const Messages = () => {
                                         const isSelected = selectedChat?._id === chat._id;
                                         return (
                                             <li key={chat._id}>
-                                                <button
-                                                    onClick={() => handleChatSelect(chat)}
-                                                    className={`w-full text-left p-4 flex items-start gap-3 transition-all hover:bg-white ${isSelected ? 'bg-white border-l-2 border-black' : 'border-l-2 border-transparent'}`}
-                                                >
-                                                    {/* Avatar */}
-                                                    <div className={`w-11 h-11 rounded-full flex items-center justify-center text-base font-semibold flex-shrink-0 ${isSelected ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}>
-                                                        {other?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between mb-0.5">
-                                                            <p className={`text-sm font-semibold truncate ${isSelected ? 'text-black' : 'text-gray-900'}`}>{other?.name ?? 'Unknown'}</p>
-                                                            <span className="text-[10px] text-gray-400 flex-shrink-0 ml-2">{formatDay(chat.updatedAt)}</span>
+                                                <div className="relative group/item">
+                                                    <button
+                                                        onClick={() => handleChatSelect(chat)}
+                                                        className={`w-full text-left p-4 flex items-start gap-3 transition-all hover:bg-white ${isSelected ? 'bg-white border-l-2 border-black' : 'border-l-2 border-transparent'}`}
+                                                    >
+                                                        {/* Avatar */}
+                                                        <div className={`w-11 h-11 rounded-full flex items-center justify-center text-base font-semibold flex-shrink-0 ${isSelected ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                                            {other?.name?.charAt(0)?.toUpperCase() ?? '?'}
                                                         </div>
-                                                        {/* Product badge */}
-                                                        {chat.product?.name && (
-                                                            <div className="flex items-center gap-1 mb-0.5">
-                                                                <Package size={10} className="text-gray-400" />
-                                                                <span className="text-[10px] text-gray-400 truncate">{chat.product.name}</span>
+                                                        <div className="flex-1 min-w-0 pr-6">
+                                                            <div className="flex items-center justify-between mb-0.5">
+                                                                <p className={`text-sm font-semibold truncate ${isSelected ? 'text-black' : 'text-gray-900'}`}>{other?.name ?? 'Unknown'}</p>
+                                                                <span className="text-[10px] text-gray-400 flex-shrink-0 ml-2">{formatDay(chat.updatedAt)}</span>
                                                             </div>
-                                                        )}
-                                                        <p className="text-xs text-gray-400 truncate">{chat.lastMessage || 'Start the conversation'}</p>
-                                                    </div>
-                                                </button>
+                                                            {/* Product badge */}
+                                                            {chat.product?.name && (
+                                                                <div className="flex items-center gap-1 mb-0.5">
+                                                                    <Package size={10} className="text-gray-400" />
+                                                                    <span className="text-[10px] text-gray-400 truncate">{chat.product.name}</span>
+                                                                </div>
+                                                            )}
+                                                            <p className="text-xs text-gray-400 truncate">{chat.lastMessage || 'Start the conversation'}</p>
+                                                        </div>
+                                                    </button>
+                                                    
+                                                    {/* Delete chat button - only shows on hover */}
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeleteChatTargetId(chat._id);
+                                                        }}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/item:opacity-100"
+                                                        title="Delete conversation"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             </li>
                                         );
                                     })}
@@ -429,7 +461,9 @@ const Messages = () => {
                                         </div>
                                     ) : (
                                         chatMessages.map((msg) => {
-                                            const isOwn = msg.sender?._id === user?._id || msg.sender === user?._id;
+                                            const currentUserId = user?._id || user?.id;
+                                            const senderId = msg.sender?._id || msg.sender?.id || msg.sender;
+                                            const isOwn = senderId && currentUserId && senderId.toString() === currentUserId.toString();
                                             const isEditing = editingMessageId === msg._id;
 
                                             if (isEditing) {
