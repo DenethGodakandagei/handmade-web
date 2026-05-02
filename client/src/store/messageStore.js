@@ -165,7 +165,11 @@ const useMessageStore = create((set, get) => ({
         try {
             const response = await messageService.sendChatMessage(selectedChat._id, content);
             const newMsg = response?.data ?? response;
-            set({ chatMessages: [...chatMessages, newMsg] });
+            set((state) => ({ 
+                chatMessages: newMsg._id && state.chatMessages.some(m => m._id === newMsg._id) 
+                    ? state.chatMessages 
+                    : [...state.chatMessages, newMsg] 
+            }));
             // Update lastMessage in the chat list
             set((state) => ({
                 chatList: state.chatList.map(c =>
@@ -206,7 +210,7 @@ const useMessageStore = create((set, get) => ({
     setEditingMessageId: (id) => set({ editingMessageId: id }),
     connectChatSocket: () => {
         const { chatSocket } = get();
-        if (chatSocket?.connected) return;
+        if (chatSocket) return; // Socket is already created (either connected or connecting)
         const token = localStorage.getItem('token');
         if (!token) return;
         const newSocket = io(SOCKET_URL, { auth: { token } });
@@ -216,8 +220,27 @@ const useMessageStore = create((set, get) => ({
         });
 
         newSocket.on('receiveMessage', (msg) => {
-            const { selectedChat, chatMessages } = get();
-            if (selectedChat && msg.chatId === selectedChat._id) {
+            const { selectedChat, chatMessages, chatList } = get();
+            const incomingChatId = msg.chatId || msg.chat;
+
+            // Update chat list
+            const chatExists = chatList.find(c => c._id === incomingChatId);
+            if (!chatExists) {
+                // It's a new chat, fetch all chats to get its populated details
+                get().fetchMyChats();
+            } else {
+                // Update existing chat in list
+                set({
+                    chatList: chatList.map(c => 
+                        c._id === incomingChatId 
+                            ? { ...c, lastMessage: msg.content, updatedAt: msg.createdAt || new Date().toISOString() } 
+                            : c
+                    )
+                });
+            }
+
+            // Update messages if this is the active chat
+            if (selectedChat && incomingChatId === selectedChat._id) {
                 // ignore duplicates (e.g. message originated from this client)
                 if (msg._id && chatMessages.some(m => m._id === msg._id)) return;
                 set({ chatMessages: [...chatMessages, msg] });

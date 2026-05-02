@@ -44,8 +44,21 @@ export const sendMessage = asyncHandler(async (req, res) => {
     content
   );
 
+  // We add chatId to the payload because frontend expects msg.chatId or msg.chat
+  const payload = { ...message.toObject(), chatId };
+
   const io = getIO();
-  io.to(chatId).emit("receiveMessage", message);
+  io.to(chatId).emit("receiveMessage", payload);
+
+  // Emit to recipient's personal room as well
+  const Chat = (await import("../models/ChatModel.js")).default;
+  const chat = await Chat.findById(chatId);
+  if (chat) {
+    const recipientId = chat.artisan.toString() === req.user.id 
+      ? chat.customer.toString() 
+      : chat.artisan.toString();
+    io.to(recipientId).emit("receiveMessage", payload);
+  }
 
   res.status(201).json({ success: true, data: message });
 });

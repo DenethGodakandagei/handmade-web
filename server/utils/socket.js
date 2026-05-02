@@ -48,6 +48,9 @@ export const initSocket = (httpServer) => {
   io.on("connection", (socket) => {
     logger.info(`Socket connected: ${socket.user.id}`);
 
+    // Join personal room for user-specific notifications
+    socket.join(socket.user.id.toString());
+
     socket.on("joinChat", (chatId) => {
       socket.join(chatId);
     });
