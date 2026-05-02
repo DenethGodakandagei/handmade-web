@@ -5,8 +5,6 @@ build/
 .cache/
 
 # --- Environment & Keys ---
-.env
-.env.local
 .env.*.local
 *.pem
 *.key
@@ -51,3 +49,4 @@ temp_*/
 test_results_*.md
 experiment_*.md
 .antigravityignore
+config.bat
