@@ -14,7 +14,7 @@ export const initSocket = (httpServer) => {
   });
 
   /**
-   * 🔐 Socket Authentication Middleware
+   * Socket Authentication Middleware
    */
   io.use(async (socket, next) => {
     try {
@@ -34,7 +34,7 @@ export const initSocket = (httpServer) => {
         return next(new Error("Authentication error: User not found"));
       }
 
-      socket.user = user; // 👈 attach authenticated user
+      socket.user = user; //attach authenticated user
       next();
     } catch (err) {
       logger.error("Socket auth failed", err);
