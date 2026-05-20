@@ -44,7 +44,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     content
   );
 
-  // We add chatId to the payload because frontend expects msg.chatId or msg.chat
+  // add chatId to the payload because frontend expects msg.chatId or msg.chat
   const payload = { ...message.toObject(), chatId };
 
   const io = getIO();
