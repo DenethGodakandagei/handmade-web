@@ -67,7 +67,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
  * @desc Get chat messages
  */
 export const getMessages = asyncHandler(async (req, res) => {
-  const messages = await getMessagesService(req.params.chatId);
+  const messages = await getMessagesService(req.params.chatId, req.user.id);
   res.status(200).json({ success: true, data: messages });
 });
 
