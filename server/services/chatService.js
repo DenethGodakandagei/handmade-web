@@ -29,7 +29,20 @@ export const getMyChatsService = async (userId) => {
     .sort({ updatedAt: -1 });
 };
 
+const assertChatParticipant = async (chatId, userId) => {
+  const chat = await Chat.findOne({
+    _id: chatId,
+    $or: [{ customer: userId }, { artisan: userId }]
+  });
+
+  if (!chat) throw new Error("Chat not found or unauthorized");
+
+  return chat;
+};
+
 export const sendMessageService = async (chatId, senderId, content) => {
+  await assertChatParticipant(chatId, senderId);
+
   const message = await Message.create({
     chat: chatId,
     sender: senderId,
@@ -43,7 +56,9 @@ export const sendMessageService = async (chatId, senderId, content) => {
   return message;
 };
 
-export const getMessagesService = async (chatId) => {
+export const getMessagesService = async (chatId, userId) => {
+  await assertChatParticipant(chatId, userId);
+
   return Message.find({ chat: chatId })
     .populate("sender", "name role")
     .sort({ createdAt: 1 });
