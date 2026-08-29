@@ -47,7 +47,25 @@ dotenv.config();
 const app = express();
 
 // Security headers
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'",  "https://js.stripe.com"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "blob:", "http://localhost:4000", "https:","https://res.cloudinary.com", "https://images.unsplash.com"],
+        connectSrc: ["'self'", "http://localhost:4000", "ws://localhost:4000", "ws://localhost:3000", "https://api.stripe.com"],
+        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],       
+        frameAncestors: ["'none'"],    
+      },
+    },
+  })
+);
 
 // Standard middleware
 app.use(express.json());
