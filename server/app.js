@@ -52,16 +52,20 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'",  "https://js.stripe.com"],
+        scriptSrc: [
+          "'self'",
+          "https://js.stripe.com",
+          "'sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk='"
+        ],
         styleSrc: ["'self'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-        imgSrc: ["'self'", "data:", "blob:", "http://localhost:4000", "https:","https://res.cloudinary.com", "https://images.unsplash.com"],
-        connectSrc: ["'self'", "http://localhost:4000", "ws://localhost:4000", "ws://localhost:3000", "https://api.stripe.com"],
+        imgSrc: ["'self'", "data:", "blob:", "http://localhost:4000", "https:", "https://res.cloudinary.com", "https://images.unsplash.com"],
+        connectSrc: ["'self'", "http://localhost:4000", "ws://localhost:4000", "ws://localhost:3000", "https://api.stripe.com", "https://get.geojs.io", "https://open.er-api.com"],
         frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
-        formAction: ["'self'"],       
-        frameAncestors: ["'none'"],    
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
       },
     },
   })

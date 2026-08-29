@@ -8,6 +8,9 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors";
+import dns from "dns";
+
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 
 
