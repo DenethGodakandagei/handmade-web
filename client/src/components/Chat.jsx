@@ -27,11 +27,14 @@ const Chat = ({ chatId, token, onClose, product, sellerName }) => {
 
     const socket = connectSocket(token);
 
-    // join after connection established
     const onConnect = () => {
       socket.emit("joinChat", chatId);
     };
-    socket.on("connect", onConnect);
+    if (socket.connected) {
+      onConnect();
+    } else {
+      socket.on("connect", onConnect);
+    }
 
     const handleReceive = (msg) => {
       // normalize sender to object for consistent rendering
@@ -73,8 +76,10 @@ const Chat = ({ chatId, token, onClose, product, sellerName }) => {
       if (!newMsg.sender) {
         newMsg.sender = { _id: user?._id || "You" };
       }
-      setMessages((prev) => [...prev, newMsg]);
-
+      setMessages((prev) => {
+        if (newMsg._id && prev.some((m) => m._id === newMsg._id)) return prev;
+        return [...prev, newMsg];
+      });
 
       setText("");
       inputRef.current?.focus();
