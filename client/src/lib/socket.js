@@ -20,12 +20,14 @@ let socket = null;
 
 export const connectSocket = (token) => {
   // ✅ Prevent multiple connections
-  if (socket && socket.connected) {
+  if (socket) {
     return socket;
   }
 
+  const authToken = token || localStorage.getItem("token");
+
   socket = io("http://localhost:4000", {
-    auth: { token },
+    auth: { token: authToken },
     transports: ["websocket"], // more reliable than polling
     autoConnect: true,
   });
