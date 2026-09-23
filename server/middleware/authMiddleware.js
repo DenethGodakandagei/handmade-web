@@ -29,6 +29,12 @@ export const protect = async (req, res, next) => {
 
     req.user = await User.findById(decoded.id);
 
+    // FIX [HIGH-4]: Token may be valid but the account was deleted after issuance.
+    // Without this check req.user is null, crashing authorize() with a TypeError.
+    if (!req.user) {
+      return next(new ErrorResponse('User account no longer exists', 401));
+    }
+
     next();
   } catch (err) {
     logger.error(err);
@@ -39,10 +45,11 @@ export const protect = async (req, res, next) => {
 // Grant access to specific roles
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    // FIX [HIGH-4]: Guard against req.user being null (e.g. deleted account slipping through)
+    if (!req.user || !roles.includes(req.user.role)) {
       return next(
         new ErrorResponse(
-          `User role ${req.user.role} is not authorized to access this route`,
+          `User role ${req.user?.role ?? 'unknown'} is not authorized to access this route`,
           403
         )
       );
