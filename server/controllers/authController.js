@@ -59,37 +59,37 @@ export const login = async (req, res, next) => {
     const user = await authService.loginUser(email, password);
     sendTokenResponse(user, 200, res, req);
   } catch (err) {
-     if (err.message === 'Invalid credentials') {
-        // Track the failed login attempt
-        const rawIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '0.0.0.0';
-        const ip = rawIp.split(',')[0].replace('::ffff:', '');
+    if (err.message === 'Invalid credentials') {
+      // Track the failed login attempt
+      const rawIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '0.0.0.0';
+      const ip = rawIp.split(',')[0].replace('::ffff:', '');
 
-        FailedLogin.create({
-          email: req.body.email,
-          ip,
-          userAgent: req.headers['user-agent'] || '',
-          reason: 'invalid_credentials'
-        }).catch(() => {}); // Non-blocking
+      FailedLogin.create({
+        email: req.body.email,
+        ip,
+        userAgent: req.headers['user-agent'] || '',
+        reason: 'invalid_credentials'
+      }).catch(() => { }); // Non-blocking
 
-        // Auto-block IP after threshold
-        FailedLogin.countDocuments({
-          ip,
-          createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }
-        }).then(async (count) => {
-          if (count >= AUTO_BLOCK_THRESHOLD) {
-            const exists = await BlacklistedIP.findOne({ ip });
-            if (!exists) {
-              await BlacklistedIP.create({
-                ip,
-                reason: `Auto-blocked: ${count} failed login attempts in 1 hour`,
-                autoBlocked: true
-              });
-            }
+      // Auto-block IP after threshold
+      FailedLogin.countDocuments({
+        ip,
+        createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }
+      }).then(async (count) => {
+        if (count >= AUTO_BLOCK_THRESHOLD) {
+          const exists = await BlacklistedIP.findOne({ ip });
+          if (!exists) {
+            await BlacklistedIP.create({
+              ip,
+              reason: `Auto-blocked: ${count} failed login attempts in 1 hour`,
+              autoBlocked: true
+            });
           }
-        }).catch(() => {});
+        }
+      }).catch(() => { });
 
-        return next(new ErrorResponse('Invalid credentials', 401));
-     }
+      return next(new ErrorResponse('Invalid credentials', 401));
+    }
     next(err);
   }
 };
@@ -115,7 +115,7 @@ export const logout = async (req, res, next) => {
   if (authHeader && authHeader.startsWith('Bearer')) {
     const token = authHeader.split(' ')[1];
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    ActiveSession.deleteOne({ tokenHash }).catch(() => {});
+    ActiveSession.deleteOne({ tokenHash }).catch(() => { });
   }
 
   res.cookie('token', 'none', {
@@ -271,7 +271,7 @@ const sendTokenResponse = (user, statusCode, res, req) => {
         lastActivity: new Date()
       },
       { upsert: true, new: true }
-    ).catch(() => {}); // Non-blocking
+    ).catch(() => { }); // Non-blocking
   }
 
   res

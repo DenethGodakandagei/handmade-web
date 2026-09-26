@@ -39,22 +39,26 @@ export const WAFMiddleware = async (req, res, next) => {
             message: 'Access denied. Your IP has been blocked by the platform administrator.'
         });
     }
-    
+
+    // FIX [CRIT-3]: Payload inspection runs BEFORE next() so malicious requests are
+    // actually rejected rather than just flagged after the route handler already ran.
+    const payloadString = JSON.stringify(req.body || {}) + req.originalUrl;
+    const maliciousPattern = /(\$where|\$ne|\$gt|\$lt|union\s+select|select\s+\*|1=1|--)/i;
+
+    if (maliciousPattern.test(payloadString)) {
+        logger.error(`WAF BLOCKED: Threat signature detected from ${ip} | Path: ${req.originalUrl}`);
+        return res.status(400).json({
+            success: false,
+            statusCode: 400,
+            message: 'Request blocked: malicious payload detected.'
+        });
+    }
+
     // Asynchronously hook IP to geo database without blocking the request
     trackIP(ip).then(geo => {
         const countryCode = geo.countryCode || 'LCL';
         const isp = geo.isp || 'Local Network / ISP';
-        
-        // SQL / NoSQL Injection Regex check
-        const payloadString = JSON.stringify(req.body || {}) + req.originalUrl;
-        const maliciousPattern = /(\$where|\$ne|\$gt|\$lt|union\s+select|select\s+\*|1=1|--)/i;
-        
-        if (maliciousPattern.test(payloadString)) {
-            logger.error(`WAF BLOCK: Threat signature detected from ${ip} | Path: ${req.originalUrl}`);
-            req.waf_blocked = true;
-        } else {
-            logger.info(`[WAF] ${req.method} ${req.originalUrl} - ${ip} (${countryCode}) - ${isp}`);
-        }
+        logger.info(`[WAF] ${req.method} ${req.originalUrl} - ${ip} (${countryCode}) - ${isp}`);
     }).catch(e => {
         logger.error(`WAF geo tracking failure: ${e.message}`);
     });
