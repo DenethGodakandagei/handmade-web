@@ -16,6 +16,16 @@ const UserSchema = new mongoose.Schema({
       'Please add a valid email'
     ]
   },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true   // Allows multiple null values (local-auth users)
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  },
   isSeller: {
     type: Boolean,
     default: false
@@ -32,7 +42,7 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please add a password'],
+    required: function () { return this.authProvider === 'local'; },
     minlength: 6,
     select: false
   },
@@ -55,9 +65,9 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Encrypt password using bcrypt
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password') || !this.password) {
+    return;
   }
 
   const salt = await bcrypt.genSalt(10);

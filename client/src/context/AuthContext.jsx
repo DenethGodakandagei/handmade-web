@@ -139,6 +139,29 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // OAuth: authenticate with a JWT token received from server redirect
+  const loginWithToken = useCallback(async (token) => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    try {
+      localStorage.setItem('token', token);
+
+      const meResponse = await authService.getMe();
+      const userData = meResponse.data || meResponse;
+
+      localStorage.setItem('user', JSON.stringify(userData));
+      dispatch({ type: 'AUTH_SUCCESS', payload: { user: userData, token } });
+      return true;
+    } catch (error) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      dispatch({
+        type: 'AUTH_FAILURE',
+        payload: error.response?.data?.message || error.message || 'OAuth login failed'
+      });
+      throw error;
+    }
+  }, []);
+
   const fetchMe = useCallback(async () => {
     try {
       const response = await authService.getMe();
@@ -171,6 +194,7 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(() => ({
     ...state,
     login,
+    loginWithToken,
     register,
     logout,
     fetchMe,
@@ -179,7 +203,7 @@ export const AuthProvider = ({ children }) => {
     toggleAuthModalView,
     clearError,
     updateUser,
-  }), [state, login, register, logout, fetchMe, openAuthModal, closeAuthModal, toggleAuthModalView, clearError, updateUser]);
+  }), [state, login, loginWithToken, register, logout, fetchMe, openAuthModal, closeAuthModal, toggleAuthModalView, clearError, updateUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

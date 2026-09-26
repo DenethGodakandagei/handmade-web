@@ -55,6 +55,7 @@ import OrderSuccess from './pages/OrderSuccess';
 import OrderCancel from './pages/OrderCancel';
 import Contact from './pages/Contact';
 import Support from './pages/Support';
+import OAuthCallback from './pages/OAuthCallback';
 import { useAuth } from './context/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import CartSidebar from './components/CartSidebar';
@@ -67,6 +68,9 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen relative font-sans antialiased text-gray-900 selection:bg-primary/20 selection:text-primary">
       <Routes>
+        {/* OAuth callback (outside MainLayout — no navbar/footer) */}
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
+
         {/* Main Public Layout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />

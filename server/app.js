@@ -12,6 +12,9 @@ import { fileURLToPath } from 'url';
 
 import errorHandler from './middleware/errorMiddleware.js';
 import pathTraversalGuard from './middleware/pathTraversalGuard.js';
+import passport from 'passport';
+import cookieParser from 'cookie-parser';
+import configurePassport from './config/passport.js';
 
 // Swagger
 import swaggerUi from 'swagger-ui-express';
@@ -57,17 +60,18 @@ app.use(
         scriptSrc: [
           "'self'",
           "https://js.stripe.com",
+          "https://accounts.google.com",
           "'sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk='"
         ],
-        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com", "https://accounts.google.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-        imgSrc: ["'self'", "data:", "blob:", "http://localhost:4000", "https:", "https://res.cloudinary.com", "https://images.unsplash.com"],
-        connectSrc: ["'self'", "http://localhost:4000", "ws://localhost:4000", "ws://localhost:3000", "https://api.stripe.com", "https://get.geojs.io", "https://open.er-api.com"],
+        imgSrc: ["'self'", "data:", "blob:", "http://localhost:4000", "https:", "https://res.cloudinary.com", "https://images.unsplash.com", "https://lh3.googleusercontent.com"],
+        connectSrc: ["'self'", "http://localhost:4000", "ws://localhost:4000", "ws://localhost:3000", "https://api.stripe.com", "https://accounts.google.com", "https://get.geojs.io", "https://open.er-api.com"],
 
-        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com", "https://accounts.google.com"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
-        formAction: ["'self'"],
+        formAction: ["'self'", "https://accounts.google.com"],
         frameAncestors: ["'none'"],
       },
     },
@@ -81,8 +85,13 @@ app.use(pathTraversalGuard);
 
 // Standard middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(trafficTracker);
 app.use(requestLogger);
+
+// Passport (Google OAuth 2.0 / OpenID Connect)
+configurePassport();
+app.use(passport.initialize());
 
 // Enable CORS
 app.use(cors());

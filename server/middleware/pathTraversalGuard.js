@@ -26,7 +26,7 @@ const ALLOWED_EXTENSIONS = new Set([
   '.map',  '.txt',  '.xml',  '.pdf',
 ]);
 
-const SAFE_PARAM_VALUE = /^[a-zA-Z0-9\-_.\/@=+?&%,;:!~*'()]+$/;
+const SAFE_PARAM_VALUE = /^[\w\s\-._~:/?#[\]@!$&'()*+,;=%]*$/;
 
 const TRAVERSAL_PATTERNS = [
   '..',

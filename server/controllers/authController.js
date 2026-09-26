@@ -234,6 +234,60 @@ export const rejectApplication = async (req, res, next) => {
   }
 };
 
+// @desc      Google OAuth callback — issue JWT and redirect to client
+// @route     GET /api/v1/auth/google/callback
+// @access    Public (called by Google after user consent)
+export const googleCallback = async (req, res) => {
+  const clientOrigin = req.cookies?.oauth_origin || process.env.CLIENT_URL || 'http://localhost:3000';
+  res.clearCookie('oauth_origin');
+
+  try {
+    // req.user is set by Passport after successful Google authentication
+    const user = req.user;
+
+    if (!user) {
+      return res.redirect(
+        `${clientOrigin}/oauth/callback?error=no_user`
+      );
+    }
+
+    // Issue the same JWT used by local login
+    const token = user.getSignedJwtToken();
+
+    // Track active session (same logic as local login)
+    const rawIp = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '0.0.0.0';
+    const ip = rawIp.split(',')[0].replace('::ffff:', '');
+    const ua = req.headers?.['user-agent'] || '';
+    const { browser, os, device } = parseUA(ua);
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    ActiveSession.findOneAndUpdate(
+      { tokenHash },
+      {
+        user: user._id,
+        token: tokenHash,
+        tokenHash,
+        ip,
+        userAgent: ua,
+        device,
+        browser,
+        os,
+        lastActivity: new Date()
+      },
+      { upsert: true, new: true }
+    ).catch(() => { }); // Non-blocking
+
+    // Redirect to client with token in query param (short-lived, consumed immediately)
+    res.redirect(
+      `${clientOrigin}/oauth/callback?token=${token}`
+    );
+  } catch (err) {
+    res.redirect(
+      `${clientOrigin}/oauth/callback?error=server_error`
+    );
+  }
+};
+
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res, req) => {
   const token = user.getSignedJwtToken();

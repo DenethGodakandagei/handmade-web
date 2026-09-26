@@ -38,7 +38,7 @@ const ALLOWED_EXTENSIONS = new Set([
  * Allows: alphanumeric, hyphen, underscore, dot, @, /, = (for base64), +, ?, &
  * Disallows: consecutive dots (..), backslashes, null bytes, angle brackets, etc.
  */
-const SAFE_PARAM_VALUE = /^[a-zA-Z0-9\-_.\/@=+?&%,;:!~*'()]+$/;
+const SAFE_PARAM_VALUE = /^[\w\s\-._~:/?#[\]@!$&'()*+,;=%]*$/;
 
 /** Patterns that indicate a traversal attempt (decoded form). */
 const TRAVERSAL_PATTERNS = [
