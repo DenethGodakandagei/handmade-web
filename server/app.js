@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import errorHandler from './middleware/errorMiddleware.js';
+import pathTraversalGuard from './middleware/pathTraversalGuard.js';
 
 // Swagger
 import swaggerUi from 'swagger-ui-express';
@@ -74,6 +75,9 @@ app.use(
 );
 
 app.use(helmet.noSniff());
+
+// Path traversal protection (CWE-22)
+app.use(pathTraversalGuard);
 
 // Standard middleware
 app.use(express.json());
