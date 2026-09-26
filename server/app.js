@@ -52,6 +52,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
+
         scriptSrc: [
           "'self'",
           "https://js.stripe.com",
@@ -61,6 +62,7 @@ app.use(
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "blob:", "http://localhost:4000", "https:", "https://res.cloudinary.com", "https://images.unsplash.com"],
         connectSrc: ["'self'", "http://localhost:4000", "ws://localhost:4000", "ws://localhost:3000", "https://api.stripe.com", "https://get.geojs.io", "https://open.er-api.com"],
+
         frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -70,6 +72,8 @@ app.use(
     },
   })
 );
+
+app.use(helmet.noSniff());
 
 // Standard middleware
 app.use(express.json());
